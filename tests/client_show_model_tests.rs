@@ -43,11 +43,11 @@ async fn test_show_model_async_success() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("llama3.1");
@@ -79,11 +79,11 @@ async fn test_show_model_async_verbose() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::verbose("gemma3");
@@ -105,11 +105,11 @@ async fn test_show_model_async_model_not_found() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("nonexistent");
@@ -139,11 +139,11 @@ async fn test_show_model_async_retry_on_server_error() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 1,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        1,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("llama3.1");
@@ -166,11 +166,11 @@ async fn test_show_model_async_minimal_response() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("minimal-model");
@@ -211,11 +211,11 @@ fn test_show_model_sync_success() {
         )
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("gemma3");
@@ -245,11 +245,11 @@ fn test_show_model_sync_verbose() {
         .with_body(r#"{"template": "{{ .Prompt }}"}"#)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::verbose("mistral");
@@ -267,11 +267,11 @@ fn test_show_model_sync_model_not_found() {
 
     let mock = server.mock("POST", "/api/show").with_status(404).create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("missing-model");
@@ -299,11 +299,11 @@ fn test_show_model_sync_retry_on_server_error() {
         .expect(1)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 1,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        1,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("llama3.1");
@@ -329,11 +329,11 @@ async fn test_show_model_async_max_retries_exceeded() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(1),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(1),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("llama3.1");
@@ -353,11 +353,11 @@ fn test_show_model_sync_max_retries_exceeded() {
         .expect(3) // Initial + 2 retries
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(1),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(1),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("llama3.1");
@@ -378,11 +378,11 @@ async fn test_show_model_async_bad_request() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("invalid");
@@ -402,11 +402,11 @@ fn test_show_model_sync_bad_request() {
         .expect(1) // Should only be called once (no retry on 4xx)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = ShowRequest::new("invalid");

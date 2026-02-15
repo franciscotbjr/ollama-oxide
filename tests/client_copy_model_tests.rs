@@ -21,11 +21,11 @@ async fn test_copy_model_async_success() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("llama3.1", "llama3.1-backup");
@@ -45,11 +45,11 @@ async fn test_copy_model_async_model_not_found() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("nonexistent", "backup");
@@ -77,11 +77,11 @@ async fn test_copy_model_async_retry_on_server_error() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 1,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        1,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("model", "model-copy");
@@ -106,11 +106,11 @@ async fn test_copy_model_async_different_models() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("gemma3", "my-gemma");
@@ -137,11 +137,11 @@ fn test_copy_model_sync_success() {
         .with_status(200)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("gemma3", "gemma3-backup");
@@ -157,11 +157,11 @@ fn test_copy_model_sync_model_not_found() {
 
     let mock = server.mock("POST", "/api/copy").with_status(404).create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("missing", "copy");
@@ -187,11 +187,11 @@ fn test_copy_model_sync_retry_on_server_error() {
         .expect(1)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 1,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        1,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("model", "backup");
@@ -215,11 +215,11 @@ fn test_copy_model_sync_different_models() {
         .with_status(200)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("mistral", "mistral-fine-tuned");
@@ -244,11 +244,11 @@ async fn test_copy_model_async_max_retries_exceeded() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(1),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(1),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("model", "copy");
@@ -268,11 +268,11 @@ fn test_copy_model_sync_max_retries_exceeded() {
         .expect(3) // Initial + 2 retries
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(1),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(1),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("model", "copy");
@@ -292,11 +292,11 @@ async fn test_copy_model_async_bad_request() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 2, // Should NOT retry on 4xx
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        2, // Should NOT retry on 4xx
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("invalid", "also-invalid");
@@ -316,11 +316,11 @@ fn test_copy_model_sync_bad_request() {
         .expect(1) // Should only be called once (no retry on 4xx)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = CopyRequest::new("invalid", "also-invalid");

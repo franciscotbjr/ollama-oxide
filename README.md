@@ -1,5 +1,6 @@
 # ollama-oxide
-  [![Crates.io](https://crates.io/crates/ollama-oxide)](https://crates.io/crates/ollama-oxide)
+
+  [![Crates.io](https://img.shields.io/crates/v/ollama-oxide)](https://crates.io/crates/markdown-harvest)
   [![Documentation](https://docs.rs/ollama_oxide/badge.svg)](https://docs.rs/ollama_oxide)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org/)

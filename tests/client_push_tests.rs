@@ -5,11 +5,11 @@ use ollama_oxide::{ClientConfig, OllamaApiAsync, OllamaApiSync, OllamaClient, Pu
 use std::time::Duration;
 
 fn make_config(base_url: String) -> ClientConfig {
-    ClientConfig {
+    ClientConfig::new(
         base_url,
-        timeout: Duration::from_secs(30),
-        max_retries: 3,
-    }
+        Duration::from_secs(30),
+        3,
+    ).unwrap()
 }
 
 // ============================================================================

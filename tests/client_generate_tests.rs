@@ -610,11 +610,11 @@ async fn test_generate_async_success() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = GenerateRequest::new("qwen3:0.6b", "Hello");
@@ -648,11 +648,11 @@ async fn test_generate_async_with_options() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = GenerateRequest::new("model", "Hello")
@@ -675,11 +675,11 @@ async fn test_generate_async_model_not_found() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = GenerateRequest::new("nonexistent", "Hello");
@@ -710,11 +710,11 @@ async fn test_generate_async_retry_on_server_error() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 1,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        1,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = GenerateRequest::new("model", "Hello");
@@ -737,11 +737,11 @@ async fn test_generate_async_max_retries_exceeded() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(1),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(1),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = GenerateRequest::new("model", "Hello");
@@ -773,11 +773,11 @@ fn test_generate_sync_success() {
         )
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = GenerateRequest::new("qwen3:0.6b", "Hello");
@@ -797,11 +797,11 @@ fn test_generate_sync_model_not_found() {
         .with_status(404)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = GenerateRequest::new("nonexistent", "Hello");
@@ -830,11 +830,11 @@ fn test_generate_sync_retry_on_server_error() {
         .expect(1)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 1,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        1,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = GenerateRequest::new("model", "Hello");

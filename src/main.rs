@@ -62,11 +62,11 @@ async fn async_example_default() -> Result<(), Box<dyn std::error::Error>> {
 /// Example: Async API with custom configuration
 async fn async_example_custom() -> Result<(), Box<dyn std::error::Error>> {
     // Create custom configuration
-    let config = ClientConfig {
-        base_url: "http://localhost:11434".to_string(),
-        timeout: Duration::from_secs(10),
-        max_retries: 5,
-    };
+    let config = ClientConfig::new(
+        "http://localhost:11434".to_string(),
+        Duration::from_secs(10),
+        5,
+    )?;
 
     let client = OllamaClient::new(config)?;
 

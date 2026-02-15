@@ -20,11 +20,11 @@ async fn test_delete_model_async_success() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = DeleteRequest::new("llama3.1-backup");
@@ -44,11 +44,11 @@ async fn test_delete_model_async_model_not_found() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = DeleteRequest::new("nonexistent");
@@ -76,11 +76,11 @@ async fn test_delete_model_async_retry_on_server_error() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 1,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        1,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = DeleteRequest::new("model");
@@ -107,11 +107,11 @@ fn test_delete_model_sync_success() {
         .with_status(200)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = DeleteRequest::new("gemma3-backup");
@@ -130,11 +130,11 @@ fn test_delete_model_sync_model_not_found() {
         .with_status(404)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = DeleteRequest::new("missing");
@@ -160,11 +160,11 @@ fn test_delete_model_sync_retry_on_server_error() {
         .expect(1)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 1,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        1,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = DeleteRequest::new("model");
@@ -190,11 +190,11 @@ async fn test_delete_model_async_max_retries_exceeded() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(1),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(1),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = DeleteRequest::new("model");
@@ -214,11 +214,11 @@ fn test_delete_model_sync_max_retries_exceeded() {
         .expect(3)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(1),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(1),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = DeleteRequest::new("model");

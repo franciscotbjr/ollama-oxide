@@ -4,9 +4,9 @@ This document contains internal development notes, architectural decisions, and 
 
 ## Project Status
 
-**Current Version:** 0.1.0
+**Current Version:** 0.1.2
 **Status:** Phase 1 Complete - All 12 endpoints implemented (non-streaming)
-**Last Updated:** 2026-02-04
+**Last Updated:** 2026-02-15
 
 ## Architecture Overview
 
@@ -196,6 +196,50 @@ trait ErasedTool {
 - `ToolWrapper<T>` bridges typed `Tool` → type-erased `ErasedTool`
 
 **Location:** `src/tools/erased_tool.rs`
+
+### OllamaClient Ergonomic Constructors
+
+**Decision Date:** 2026-02-15
+
+**Implementation:**
+- Added `OllamaClient::with_base_url_and_timeout(base_url, timeout)` convenience constructor
+- Provides ergonomic alternative to manual `ClientConfig` construction when only URL and timeout need customization
+
+**Before:**
+```rust
+let client = OllamaClient::new(ClientConfig::with_base_url_and_timeout(
+    "http://myserver:8080".to_string(),
+    Duration::from_secs(60),
+))?;
+```
+
+**After:**
+```rust
+let client = OllamaClient::with_base_url_and_timeout(
+    "http://myserver:8080",
+    Duration::from_secs(60),
+)?;
+```
+
+### ClientConfig Private Fields and URL Validation Invariant
+
+**Decision Date:** 2026-02-15
+
+**Implementation:**
+- `ClientConfig` fields (`base_url`, `timeout`, `max_retries`) are now private
+- All constructors (`new()`, `with_base_url()`, `with_base_url_and_timeout()`) validate URLs and return `Result<Self>`
+- Getter methods (`base_url()`, `timeout()`, `max_retries()`) provide read-only access
+- `Default` trait impl provides the only non-validated construction (uses known-good localhost URL)
+
+**Rationale:**
+- With `pub` fields, users could bypass URL validation via struct literal construction
+- Making fields private enforces that all construction goes through validated constructors
+- Eliminates redundant URL validation in `OllamaClient::new()` (previously duplicated as a safety net)
+
+**Impact:**
+- `OllamaClient::with_base_url()` and `with_base_url_and_timeout()` now delegate to `ClientConfig` constructors
+- All internal field access uses getter methods
+- ~115 struct literal sites in tests migrated to `ClientConfig::new(...).unwrap()`
 
 ### Feature-Based Design Strategy
 
