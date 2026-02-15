@@ -4,6 +4,7 @@ I'll save the current session context for the ollama-oxide project by reading cr
 
 ## Session Context (CRITICAL)
 
+### ATTENTION
 Before running the cache script, you MUST execute `/compact` command.
 
 ### `--task` argument
