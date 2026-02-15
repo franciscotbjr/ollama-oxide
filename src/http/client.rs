@@ -4,7 +4,6 @@ use crate::{Error, Result};
 use reqwest::Client;
 use std::sync::Arc;
 use std::time::Duration;
-use url::Url;
 
 use super::ClientConfig;
 
@@ -28,11 +27,11 @@ use super::ClientConfig;
 /// let client = OllamaClient::default().unwrap();
 ///
 /// // Create with custom configuration
-/// let config = ClientConfig {
-///     base_url: "http://localhost:11434".to_string(),
-///     timeout: Duration::from_secs(30),
-///     max_retries: 3,
-/// };
+/// let config = ClientConfig::new(
+///     "http://localhost:11434".to_string(),
+///     Duration::from_secs(30),
+///     3,
+/// ).unwrap();
 /// let client = OllamaClient::new(config).unwrap();
 ///
 /// // Create with custom base URL
@@ -64,27 +63,17 @@ impl OllamaClient {
     /// use ollama_oxide::{OllamaClient, ClientConfig};
     /// use std::time::Duration;
     ///
-    /// let config = ClientConfig {
-    ///     base_url: "http://localhost:11434".to_string(),
-    ///     timeout: Duration::from_secs(30),
-    ///     max_retries: 3,
-    /// };
+    /// let config = ClientConfig::new(
+    ///     "http://localhost:11434".to_string(),
+    ///     Duration::from_secs(30),
+    ///     3,
+    /// )?;
     ///
     /// let client = OllamaClient::new(config)?;
     /// # Ok::<(), ollama_oxide::Error>(())
     /// ```
     pub fn new(config: ClientConfig) -> Result<Self> {
-        // Validate base URL
-        let url = Url::parse(&config.base_url)?;
-
-        // Ensure URL has a scheme (http or https)
-        if url.scheme() != "http" && url.scheme() != "https" {
-            return Err(Error::InvalidUrlError(
-                url::ParseError::RelativeUrlWithoutBase,
-            ));
-        }
-
-        let client = Client::builder().timeout(config.timeout).build()?;
+        let client = Client::builder().timeout(config.timeout()).build()?;
 
         Ok(Self {
             config,
@@ -111,10 +100,38 @@ impl OllamaClient {
     /// # Ok::<(), ollama_oxide::Error>(())
     /// ```
     pub fn with_base_url(base_url: impl Into<String>) -> Result<Self> {
-        let config = ClientConfig {
-            base_url: base_url.into(),
-            ..Default::default()
-        };
+        let config = ClientConfig::with_base_url(base_url.into())?;
+        Self::new(config)
+    }
+
+    /// Create client with custom base URL and timeout, default retry settings
+    ///
+    /// # Arguments
+    ///
+    /// * `base_url` - Base URL for the Ollama API (must include http:// or https://)
+    /// * `timeout` - Request timeout duration
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the URL is invalid or has an unsupported scheme
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use ollama_oxide::OllamaClient;
+    /// use std::time::Duration;
+    ///
+    /// let client = OllamaClient::with_base_url_and_timeout(
+    ///     "http://localhost:8080",
+    ///     Duration::from_secs(60),
+    /// )?;
+    /// # Ok::<(), ollama_oxide::Error>(())
+    /// ```
+    pub fn with_base_url_and_timeout(
+        base_url: impl Into<String>,
+        timeout: Duration,
+    ) -> Result<Self> {
+        let config = ClientConfig::with_base_url_and_timeout(base_url.into(), timeout)?;
         Self::new(config)
     }
 
@@ -161,11 +178,11 @@ impl OllamaClient {
     where
         T: serde::de::DeserializeOwned,
     {
-        for attempt in 0..=self.config.max_retries {
+        for attempt in 0..=self.config.max_retries() {
             match self.client.get(url).send().await {
                 Ok(response) => {
                     // Retry on server errors (5xx)
-                    if response.status().is_server_error() && attempt < self.config.max_retries {
+                    if response.status().is_server_error() && attempt < self.config.max_retries() {
                         tokio::time::sleep(Duration::from_millis(100 * (attempt as u64 + 1))).await;
                         continue;
                     }
@@ -176,14 +193,14 @@ impl OllamaClient {
                 }
                 Err(_e) => {
                     // Retry on network errors
-                    if attempt < self.config.max_retries {
+                    if attempt < self.config.max_retries() {
                         tokio::time::sleep(Duration::from_millis(100 * (attempt as u64 + 1))).await;
                     }
                 }
             }
         }
 
-        Err(Error::MaxRetriesExceededError(self.config.max_retries))
+        Err(Error::MaxRetriesExceededError(self.config.max_retries()))
     }
 
     /// Execute blocking HTTP GET request with retry logic
@@ -212,14 +229,14 @@ impl OllamaClient {
     {
         // Create blocking client
         let blocking_client = reqwest::blocking::Client::builder()
-            .timeout(self.config.timeout)
+            .timeout(self.config.timeout())
             .build()?;
 
-        for attempt in 0..=self.config.max_retries {
+        for attempt in 0..=self.config.max_retries() {
             match blocking_client.get(url).send() {
                 Ok(response) => {
                     // Retry on server errors (5xx)
-                    if response.status().is_server_error() && attempt < self.config.max_retries {
+                    if response.status().is_server_error() && attempt < self.config.max_retries() {
                         std::thread::sleep(Duration::from_millis(100 * (attempt as u64 + 1)));
                         continue;
                     }
@@ -230,14 +247,14 @@ impl OllamaClient {
                 }
                 Err(_e) => {
                     // Retry on network errors
-                    if attempt < self.config.max_retries {
+                    if attempt < self.config.max_retries() {
                         std::thread::sleep(Duration::from_millis(100 * (attempt as u64 + 1)));
                     }
                 }
             }
         }
 
-        Err(Error::MaxRetriesExceededError(self.config.max_retries))
+        Err(Error::MaxRetriesExceededError(self.config.max_retries()))
     }
 
     /// Execute async HTTP POST request with retry logic (with JSON response)
@@ -265,11 +282,11 @@ impl OllamaClient {
         R: serde::Serialize,
         T: serde::de::DeserializeOwned,
     {
-        for attempt in 0..=self.config.max_retries {
+        for attempt in 0..=self.config.max_retries() {
             match self.client.post(url).json(body).send().await {
                 Ok(response) => {
                     // Retry on server errors (5xx)
-                    if response.status().is_server_error() && attempt < self.config.max_retries {
+                    if response.status().is_server_error() && attempt < self.config.max_retries() {
                         tokio::time::sleep(Duration::from_millis(100 * (attempt as u64 + 1))).await;
                         continue;
                     }
@@ -285,14 +302,14 @@ impl OllamaClient {
                 }
                 Err(_e) => {
                     // Retry on network errors
-                    if attempt < self.config.max_retries {
+                    if attempt < self.config.max_retries() {
                         tokio::time::sleep(Duration::from_millis(100 * (attempt as u64 + 1))).await;
                     }
                 }
             }
         }
 
-        Err(Error::MaxRetriesExceededError(self.config.max_retries))
+        Err(Error::MaxRetriesExceededError(self.config.max_retries()))
     }
 
     /// Execute blocking HTTP POST request with retry logic (with JSON response)
@@ -321,14 +338,14 @@ impl OllamaClient {
         T: serde::de::DeserializeOwned,
     {
         let blocking_client = reqwest::blocking::Client::builder()
-            .timeout(self.config.timeout)
+            .timeout(self.config.timeout())
             .build()?;
 
-        for attempt in 0..=self.config.max_retries {
+        for attempt in 0..=self.config.max_retries() {
             match blocking_client.post(url).json(body).send() {
                 Ok(response) => {
                     // Retry on server errors (5xx)
-                    if response.status().is_server_error() && attempt < self.config.max_retries {
+                    if response.status().is_server_error() && attempt < self.config.max_retries() {
                         std::thread::sleep(Duration::from_millis(100 * (attempt as u64 + 1)));
                         continue;
                     }
@@ -344,14 +361,14 @@ impl OllamaClient {
                 }
                 Err(_e) => {
                     // Retry on network errors
-                    if attempt < self.config.max_retries {
+                    if attempt < self.config.max_retries() {
                         std::thread::sleep(Duration::from_millis(100 * (attempt as u64 + 1)));
                     }
                 }
             }
         }
 
-        Err(Error::MaxRetriesExceededError(self.config.max_retries))
+        Err(Error::MaxRetriesExceededError(self.config.max_retries()))
     }
 
     /// Execute async HTTP POST request with retry logic (no response body)
@@ -377,11 +394,11 @@ impl OllamaClient {
     where
         R: serde::Serialize,
     {
-        for attempt in 0..=self.config.max_retries {
+        for attempt in 0..=self.config.max_retries() {
             match self.client.post(url).json(body).send().await {
                 Ok(response) => {
                     // Retry on server errors (5xx)
-                    if response.status().is_server_error() && attempt < self.config.max_retries {
+                    if response.status().is_server_error() && attempt < self.config.max_retries() {
                         tokio::time::sleep(Duration::from_millis(100 * (attempt as u64 + 1))).await;
                         continue;
                     }
@@ -396,14 +413,14 @@ impl OllamaClient {
                 }
                 Err(_e) => {
                     // Retry on network errors
-                    if attempt < self.config.max_retries {
+                    if attempt < self.config.max_retries() {
                         tokio::time::sleep(Duration::from_millis(100 * (attempt as u64 + 1))).await;
                     }
                 }
             }
         }
 
-        Err(Error::MaxRetriesExceededError(self.config.max_retries))
+        Err(Error::MaxRetriesExceededError(self.config.max_retries()))
     }
 
     /// Execute blocking HTTP POST request with retry logic (no response body)
@@ -430,14 +447,14 @@ impl OllamaClient {
         R: serde::Serialize,
     {
         let blocking_client = reqwest::blocking::Client::builder()
-            .timeout(self.config.timeout)
+            .timeout(self.config.timeout())
             .build()?;
 
-        for attempt in 0..=self.config.max_retries {
+        for attempt in 0..=self.config.max_retries() {
             match blocking_client.post(url).json(body).send() {
                 Ok(response) => {
                     // Retry on server errors (5xx)
-                    if response.status().is_server_error() && attempt < self.config.max_retries {
+                    if response.status().is_server_error() && attempt < self.config.max_retries() {
                         std::thread::sleep(Duration::from_millis(100 * (attempt as u64 + 1)));
                         continue;
                     }
@@ -452,14 +469,14 @@ impl OllamaClient {
                 }
                 Err(_e) => {
                     // Retry on network errors
-                    if attempt < self.config.max_retries {
+                    if attempt < self.config.max_retries() {
                         std::thread::sleep(Duration::from_millis(100 * (attempt as u64 + 1)));
                     }
                 }
             }
         }
 
-        Err(Error::MaxRetriesExceededError(self.config.max_retries))
+        Err(Error::MaxRetriesExceededError(self.config.max_retries()))
     }
 
     /// Execute async HTTP DELETE request with retry logic (no response body)
@@ -485,11 +502,11 @@ impl OllamaClient {
     where
         R: serde::Serialize,
     {
-        for attempt in 0..=self.config.max_retries {
+        for attempt in 0..=self.config.max_retries() {
             match self.client.delete(url).json(body).send().await {
                 Ok(response) => {
                     // Retry on server errors (5xx)
-                    if response.status().is_server_error() && attempt < self.config.max_retries {
+                    if response.status().is_server_error() && attempt < self.config.max_retries() {
                         tokio::time::sleep(Duration::from_millis(100 * (attempt as u64 + 1))).await;
                         continue;
                     }
@@ -504,14 +521,14 @@ impl OllamaClient {
                 }
                 Err(_e) => {
                     // Retry on network errors
-                    if attempt < self.config.max_retries {
+                    if attempt < self.config.max_retries() {
                         tokio::time::sleep(Duration::from_millis(100 * (attempt as u64 + 1))).await;
                     }
                 }
             }
         }
 
-        Err(Error::MaxRetriesExceededError(self.config.max_retries))
+        Err(Error::MaxRetriesExceededError(self.config.max_retries()))
     }
 
     /// Execute blocking HTTP DELETE request with retry logic (no response body)
@@ -538,14 +555,14 @@ impl OllamaClient {
         R: serde::Serialize,
     {
         let blocking_client = reqwest::blocking::Client::builder()
-            .timeout(self.config.timeout)
+            .timeout(self.config.timeout())
             .build()?;
 
-        for attempt in 0..=self.config.max_retries {
+        for attempt in 0..=self.config.max_retries() {
             match blocking_client.delete(url).json(body).send() {
                 Ok(response) => {
                     // Retry on server errors (5xx)
-                    if response.status().is_server_error() && attempt < self.config.max_retries {
+                    if response.status().is_server_error() && attempt < self.config.max_retries() {
                         std::thread::sleep(Duration::from_millis(100 * (attempt as u64 + 1)));
                         continue;
                     }
@@ -560,13 +577,13 @@ impl OllamaClient {
                 }
                 Err(_e) => {
                     // Retry on network errors
-                    if attempt < self.config.max_retries {
+                    if attempt < self.config.max_retries() {
                         std::thread::sleep(Duration::from_millis(100 * (attempt as u64 + 1)));
                     }
                 }
             }
         }
 
-        Err(Error::MaxRetriesExceededError(self.config.max_retries))
+        Err(Error::MaxRetriesExceededError(self.config.max_retries()))
     }
 }

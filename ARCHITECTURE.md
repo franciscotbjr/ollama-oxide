@@ -38,7 +38,7 @@ module/
 ```
 http/
 ├── mod.rs          # pub use config::ClientConfig; pub use client::OllamaClient;
-├── config.rs       # struct ClientConfig + impl Default
+├── config.rs       # struct ClientConfig (private fields) + validated constructors + getters
 ├── client.rs       # struct OllamaClient + constructors
 ├── api_async.rs    # trait OllamaApiAsync + impl
 └── api_sync.rs     # trait OllamaApiSync + impl
@@ -225,7 +225,7 @@ Update `src/http/api_async.rs` and `src/http/api_sync.rs` with new methods.
 
 ### New Configuration Option
 
-Add field to `ClientConfig` in `src/http/config.rs` and update `impl Default`.
+Add private field to `ClientConfig` in `src/http/config.rs`, update `impl Default`, add getter method, and update all constructors (`new()`, `with_base_url()`, `with_base_url_and_timeout()`).
 
 ---
 
@@ -238,9 +238,15 @@ pub struct OllamaClient {
     pub(super) config: ClientConfig,  // Visible in http module only
     pub(super) client: Arc<Client>,
 }
+
+pub struct ClientConfig {
+    base_url: String,      // Private — access via base_url() getter
+    timeout: Duration,     // Private — access via timeout() getter
+    max_retries: u32,      // Private — access via max_retries() getter
+}
 ```
 
-Allows trait implementations in sibling files to access internals while keeping them private externally.
+`OllamaClient` fields use `pub(super)` to allow trait implementations in sibling files to access internals while keeping them private externally. `ClientConfig` fields are fully private to enforce URL validation invariant — all construction goes through validated constructors.
 
 ### Trait per Concern
 
@@ -315,6 +321,8 @@ classDiagram
         +Arc~Client~ client
         +default() Result~Self~
         +new(config) Result~Self~
+        +with_base_url(url) Result~Self~
+        +with_base_url_and_timeout(url, timeout) Result~Self~
     }
 
     class OllamaApiAsync {
@@ -628,6 +636,7 @@ Integration tests are implemented as **examples**:
 
 ## Version History
 
+- **2026-02-15**: ClientConfig fields made private with getters; OllamaClient ergonomic constructors added
 - **2026-02-04**: Phase 1 complete - all 12 API endpoints documented (push_request, push_response added)
 - **2026-02-03**: Tool types (ToolCall, ToolDefinition) moved from inference to tools module
 - **2026-02-01**: Added feature flag architecture documentation (tools, model features)

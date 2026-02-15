@@ -105,7 +105,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `list_models_async.rs` - Async list models example
   - `list_models_sync.rs` - Sync list models example
 
+- **`OllamaClient::with_base_url_and_timeout()` convenience constructor**: Create client with custom URL and timeout in a single call
+- **Early URL validation in `ClientConfig` constructors**: `ClientConfig::new()`, `with_base_url()`, and `with_base_url_and_timeout()` now validate URLs immediately, returning `Result<Self>` instead of `Self`
+- **`ClientConfig` getter methods**: `base_url()`, `timeout()`, `max_retries()` for accessing private fields
+
 ### Changed
+- **`ClientConfig` fields are now private**: Fields `base_url`, `timeout`, and `max_retries` are no longer `pub`. All construction must go through validated constructors (`new()`, `with_base_url()`, `with_base_url_and_timeout()`, or `Default`). This enforces URL validation invariant and prevents bypassing validation via struct literals.
+- **`ClientConfig` constructors return `Result<Self>`**: `new()`, `with_base_url()`, and `with_base_url_and_timeout()` now return `Result<Self>` instead of `Self`, performing URL validation at construction time.
+- **Removed redundant URL validation from `OllamaClient::new()`**: Since `ClientConfig` now enforces URL validation at construction, the duplicate validation in `OllamaClient::new()` was removed.
+- **`OllamaClient::with_base_url()` and `with_base_url_and_timeout()` now use `ClientConfig` constructors**: Instead of struct literals, these methods delegate to validated `ClientConfig` constructors.
 - **Tool types consolidated in `src/tools/` module**: Moved `ToolCall`, `ToolCallFunction`, `ToolDefinition`, `ToolFunction` from `src/inference/` to `src/tools/`
   - Simplified feature gating: Tool types now require only `tools` feature, not `all(feature = "inference", feature = "tools")`
   - Updated imports in chat types to use `crate::tools::` instead of `super::`
