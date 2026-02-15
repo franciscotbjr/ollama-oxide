@@ -1,6 +1,6 @@
 [package]
 name = "ollama-oxide"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A Rust library for integrating with Ollama's native API, providing low-level inference and high-level conveniences."
 keywords = ["ollama", "ai", "llm", "api", "client"]

@@ -12,15 +12,16 @@ use std::fs;
 use std::path::PathBuf;
 
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize, Debug)]
-struct Phase {
-    version: String,
-    focus: String,
-    status: String,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct SessionEntry {
+    datetime: String,
+    task: String,
+    summary: String,
 }
 
+// Legacy format support (v1.x)
 #[derive(Serialize, Deserialize, Debug, Default)]
-struct SessionContext {
+struct LegacySessionContext {
     task: String,
     summary: String,
 }
@@ -48,8 +49,38 @@ struct ProjectContext {
     build_status: String,
     cache_version: String,
     project_hash: String,
+    // v2.0: array of session entries
     #[serde(default)]
-    session_context: SessionContext,
+    session_context: Vec<SessionEntry>,
+}
+
+// Legacy format for migration
+#[allow(dead_code)]
+#[derive(Deserialize, Debug)]
+struct LegacyProjectContext {
+    project_name: String,
+    version: String,
+    repository: String,
+    license: String,
+    build_system: String,
+    language: String,
+    edition: String,
+    workspace_crates: Vec<String>,
+    total_crates: u32,
+    critical_files: Vec<String>,
+    apis_spec_files: Vec<String>,
+    #[serde(default)]
+    impl_files: Vec<String>,
+    session_count: u32,
+    total_sessions: u32,
+    created_at: String,
+    last_session: String,
+    project_path: String,
+    build_status: String,
+    cache_version: String,
+    project_hash: String,
+    #[serde(default)]
+    session_context: LegacySessionContext,
 }
 
 fn get_cache_dir() -> PathBuf {
@@ -74,12 +105,91 @@ fn get_project_hash() -> String {
     format!("{:08x}", hash)
 }
 
+fn get_cache_file(cache_dir: &PathBuf) -> PathBuf {
+    cache_dir.join("project.cache")
+}
+
+fn get_backup_file(cache_dir: &PathBuf) -> PathBuf {
+    cache_dir.join("project.cache.bkp")
+}
+
+/// Try to find cache: first project.cache, then legacy project_{hash}.cache, then backup
+fn find_cache_file(cache_dir: &PathBuf, project_hash: &str) -> Option<PathBuf> {
+    // 1. Try new unified file
+    let unified = get_cache_file(cache_dir);
+    if unified.exists() {
+        return Some(unified);
+    }
+
+    // 2. Try legacy hash-based file
+    let legacy = cache_dir.join(format!("project_{}.cache", project_hash));
+    if legacy.exists() {
+        println!("  (migrating from legacy cache format)");
+        return Some(legacy);
+    }
+
+    // 3. Try backup file as last resort
+    let backup = get_backup_file(cache_dir);
+    if backup.exists() {
+        println!("  (restoring from backup)");
+        return Some(backup);
+    }
+
+    None
+}
+
+/// Parse cache content, handling both v1.x (legacy) and v2.0 formats
+fn parse_cache(content: &str) -> Result<ProjectContext, String> {
+    // Try v2.0 format first (session_context is Vec<SessionEntry>)
+    if let Ok(context) = serde_json::from_str::<ProjectContext>(content) {
+        return Ok(context);
+    }
+
+    // Try legacy format (session_context is {task, summary})
+    if let Ok(legacy) = serde_json::from_str::<LegacyProjectContext>(content) {
+        // Migrate legacy session_context to new format
+        let mut sessions = Vec::new();
+        if !legacy.session_context.task.is_empty() || !legacy.session_context.summary.is_empty() {
+            sessions.push(SessionEntry {
+                datetime: legacy.last_session.clone(),
+                task: legacy.session_context.task,
+                summary: legacy.session_context.summary,
+            });
+        }
+
+        return Ok(ProjectContext {
+            project_name: legacy.project_name,
+            version: legacy.version,
+            repository: legacy.repository,
+            license: legacy.license,
+            build_system: legacy.build_system,
+            language: legacy.language,
+            edition: legacy.edition,
+            workspace_crates: legacy.workspace_crates,
+            total_crates: legacy.total_crates,
+            critical_files: legacy.critical_files,
+            apis_spec_files: legacy.apis_spec_files,
+            impl_files: legacy.impl_files,
+            session_count: legacy.session_count,
+            total_sessions: legacy.total_sessions,
+            created_at: legacy.created_at,
+            last_session: legacy.last_session,
+            project_path: legacy.project_path,
+            build_status: legacy.build_status,
+            cache_version: "2.0".to_string(),
+            project_hash: legacy.project_hash,
+            session_context: sessions,
+        });
+    }
+
+    Err("Failed to parse cache file in any known format".to_string())
+}
+
 fn read_file_summary(file_path: &str) -> String {
     if let Ok(content) = fs::read_to_string(file_path) {
         let lines: Vec<&str> = content.lines().collect();
         let total_lines = lines.len();
 
-        // Extract first meaningful line (skip empty lines and comments)
         let first_line = lines.iter()
             .find(|line| !line.trim().is_empty() && !line.trim().starts_with('#'))
             .map(|s| s.trim())
@@ -95,14 +205,12 @@ fn read_file_summary(file_path: &str) -> String {
     }
 }
 
-/// Displays active blockers from BLOCKERS.md
 fn display_blockers() {
     let blockers_path = "BLOCKERS.md";
 
     if let Ok(content) = fs::read_to_string(blockers_path) {
         let lines: Vec<&str> = content.lines().collect();
 
-        // Find the "## Bloqueios Ativos" section
         let mut in_active_section = false;
         let mut active_blockers: Vec<&str> = Vec::new();
 
@@ -112,7 +220,6 @@ fn display_blockers() {
                 continue;
             }
             if in_active_section && line.starts_with("## ") {
-                // Reached next section, stop
                 break;
             }
             if in_active_section && line.starts_with('|') && !line.contains("---") && !line.contains("Date") {
@@ -122,9 +229,7 @@ fn display_blockers() {
 
         if !active_blockers.is_empty() {
             println!("🚧 Active Blockers ({}):", active_blockers.len());
-
             for row in &active_blockers {
-                // Parse table row: | Date | Type | Blocker | Impact | Reference |
                 let cols: Vec<&str> = row.split('|')
                     .map(|s| s.trim())
                     .filter(|s| !s.is_empty())
@@ -142,17 +247,14 @@ fn display_blockers() {
             println!();
         }
     }
-    // If file doesn't exist, silently skip (blockers are optional)
 }
 
-/// Displays next steps (TODO items) from DEV_NOTES.md
 fn display_next_steps() {
     let dev_notes_path = "DEV_NOTES.md";
 
     if let Ok(content) = fs::read_to_string(dev_notes_path) {
         let lines: Vec<&str> = content.lines().collect();
 
-        // Find the "### TODO" section
         let mut in_todo_section = false;
         let mut todo_items: Vec<&str> = Vec::new();
 
@@ -162,11 +264,9 @@ fn display_next_steps() {
                 continue;
             }
             if in_todo_section && line.starts_with("##") {
-                // Reached next section, stop
                 break;
             }
             if in_todo_section && line.trim().starts_with("- [ ]") {
-                // Extract the task description (remove "- [ ] " prefix)
                 let task = line.trim().trim_start_matches("- [ ]").trim();
                 todo_items.push(task);
             }
@@ -182,26 +282,22 @@ fn display_next_steps() {
             println!();
         }
     }
-    // If file doesn't exist or no TODOs, silently skip
 }
 
-/// Displays recent decisions from DECISIONS.md
 fn display_decisions() {
     let decisions_path = "DECISIONS.md";
 
     if let Ok(content) = fs::read_to_string(decisions_path) {
         let lines: Vec<&str> = content.lines().collect();
 
-        // Find table rows (lines starting with |)
         let table_rows: Vec<&str> = lines.iter()
             .filter(|line| line.starts_with('|') && !line.contains("---"))
             .copied()
             .collect();
 
         if table_rows.len() > 1 {
-            // Skip header row, get last 5 decisions
             let decisions: Vec<&str> = table_rows.iter()
-                .skip(1) // Skip header
+                .skip(1)
                 .copied()
                 .collect();
 
@@ -216,7 +312,6 @@ fn display_decisions() {
             println!("📜 Recent Decisions ({} total, showing last {}):", decisions.len(), recent_count);
 
             for row in recent_decisions {
-                // Parse table row: | Date | Decision | Rationale | Reference |
                 let cols: Vec<&str> = row.split('|')
                     .map(|s| s.trim())
                     .filter(|s| !s.is_empty())
@@ -239,35 +334,62 @@ fn display_decisions() {
 fn main() {
     let cache_dir = get_cache_dir();
     let project_hash = get_project_hash();
-    let cache_file = cache_dir.join(format!("project_{}.cache", project_hash));
 
     println!("🔍 Loading previous conversation context...\n");
 
-    if !cache_file.exists() {
-        println!("❌ No previous conversation found");
-        println!("   Cache file: {}", cache_file.display());
-        println!("\n💡 Tip: Run /save-session-cache to create a cache for this project");
-        std::process::exit(1);
-    }
+    // Find cache file (unified, legacy, or backup)
+    let cache_file = match find_cache_file(&cache_dir, &project_hash) {
+        Some(path) => path,
+        None => {
+            println!("❌ No previous conversation found");
+            println!("   Cache directory: {}", cache_dir.display());
+            println!("\n💡 Tip: Run /save-session-cache to create a cache for this project");
+            std::process::exit(1);
+        }
+    };
 
     // Read and parse cache
     let content = fs::read_to_string(&cache_file)
         .expect("Failed to read cache file");
 
-    let context: ProjectContext = serde_json::from_str(&content)
-        .expect("Failed to parse cache file");
+    let context = match parse_cache(&content) {
+        Ok(ctx) => ctx,
+        Err(e) => {
+            println!("❌ Failed to parse cache: {}", e);
+            // Try backup
+            let backup = get_backup_file(&cache_dir);
+            if backup.exists() && backup != cache_file {
+                println!("   Trying backup file...");
+                let backup_content = fs::read_to_string(&backup)
+                    .expect("Failed to read backup file");
+                match parse_cache(&backup_content) {
+                    Ok(ctx) => {
+                        println!("   ✅ Restored from backup!");
+                        ctx
+                    }
+                    Err(e2) => {
+                        println!("   ❌ Backup also failed: {}", e2);
+                        std::process::exit(1);
+                    }
+                }
+            } else {
+                std::process::exit(1);
+            }
+        }
+    };
 
     // Display cache summary
-    println!("✅ Context loaded successfully!\n");
+    println!("✅ Context loaded successfully! (cache v{})\n", context.cache_version);
 
-    // Display session context if available
-    if !context.session_context.task.is_empty() || !context.session_context.summary.is_empty() {
-        println!("📝 Last Session Context:");
-        if !context.session_context.task.is_empty() {
-            println!("  Task: {}", context.session_context.task);
-        }
-        if !context.session_context.summary.is_empty() {
-            println!("  Summary: {}", context.session_context.summary);
+    // Display session history
+    if !context.session_context.is_empty() {
+        println!("📝 Session History (last {}):", context.session_context.len());
+        for (i, entry) in context.session_context.iter().enumerate() {
+            let task_display = if entry.task.is_empty() { "(no task)" } else { &entry.task };
+            println!("  {}. [{}] {}", i + 1, entry.datetime, task_display);
+            if !entry.summary.is_empty() {
+                println!("     Summary: {}", entry.summary);
+            }
         }
         println!();
     }
@@ -294,17 +416,15 @@ fn main() {
     println!();
 
     println!("📄 API Specifications ({} endpoints):", context.apis_spec_files.len());
-    // Group by type
     let mut simple = Vec::new();
     let mut medium = Vec::new();
     let mut complex = Vec::new();
 
     for spec in &context.apis_spec_files {
         let filename = spec.split('/').last().unwrap_or(spec);
-        if filename.contains("version") {
-            simple.push(filename);
-        } else if filename.contains("tags") || filename.contains("ps") ||
-                  filename.contains("copy") || filename.contains("delete") {
+        if filename.contains("version") || filename.contains("tags") ||
+           filename.contains("ps") || filename.contains("copy") ||
+           filename.contains("delete") {
             simple.push(filename);
         } else if filename.contains("show") || filename.contains("embed") {
             medium.push(filename);
@@ -346,6 +466,7 @@ fn main() {
     println!("📈 Session Information:");
     println!("  Session: #{}", context.session_count);
     println!("  Total Sessions: {}", context.total_sessions);
+    println!("  Sessions Recorded: {}", context.session_context.len());
     println!("  Created: {}", context.created_at);
     println!("  Last Session: {}", context.last_session);
     println!();
@@ -363,12 +484,10 @@ fn main() {
     if let Ok(def_content) = fs::read_to_string("spec/definition.md") {
         println!("📋 Current Implementation Phase:");
 
-        // Extract current phase info
         if def_content.contains("Phase 1 (v0.1.0)") {
             println!("  Phase: 1 (v0.1.0) - Foundation + HTTP Core");
             println!("  Status: In Progress");
 
-            // Extract what's in progress
             if def_content.contains("**In Progress:**") {
                 println!("  Focus:");
                 if def_content.contains("Simple endpoints (1): version") {
@@ -388,13 +507,8 @@ fn main() {
         println!();
     }
 
-    // Read and display decisions from DECISIONS.md
     display_decisions();
-
-    // Read and display active blockers from BLOCKERS.md
     display_blockers();
-
-    // Read and display next steps from DEV_NOTES.md TODO section
     display_next_steps();
 
     println!("🚀 Ready to continue where we left off!");

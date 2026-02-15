@@ -14,71 +14,72 @@ I'll help you seamlessly continue your previous conversation by restoring all re
 
 When continuing, I'll have **MANDATORY** access to all critical project files:
 
-### 📋 **Project Specifications (spec folder)**
+### Project Specifications (spec folder)
 - **spec/definition.md** - Complete project definition and implementation strategy
 - **spec/api-analysis.md** - Detailed analysis of all 12 API endpoints
-- **spec/primitives/*.yaml** - Individual API endpoint specifications (12 files)
+- **spec/apis/*.yaml** - Individual API endpoint specifications (12 files)
 
-### 📝 **Development Documentation**
+### Implementation Plans
+- **impl/*.md** - Detailed implementation plans for each endpoint and refactoring
+
+### Development Documentation
 - **DEV_NOTES.md** - Development notes and architectural decisions
 - **CHANGELOG.md** - Version history and changes
 - **README.md** - Project overview and quick start
 - **CONTRIBUTING.md** - Development guidelines and standards
+- **ARCHITECTURE.md** - Architectural principles and module organization
+- **DECISIONS.md** - Architectural decisions log
+- **BLOCKERS.md** - Active blockers tracking
 
-### 🔧 **Build Configuration**
-- **Cargo.toml** - Rust workspace configuration and dependencies
-- Workspace crates: ollama-oxide, primitives, http-core, conveniences, samples
+### Build Configuration
+- **Cargo.toml** - Rust project configuration and dependencies
+- Single crate with feature flags: `http`, `inference`, `model`, `conveniences`
 
-### 💻 **Source Code Context**
-- **All Rust files** in workspace crates
+### Source Code Context
+- **All Rust files** in src/
 - **Current implementation status** from definition.md
 - **Testing framework** configuration (cargo test)
 - **Code formatting** tools (rustfmt, clippy)
 
-### 📊 **Session Context**
+### Session Context
+- **Session history** - Last 10 sessions with datetime, task, and summary
 - **Session count** - Track conversation continuity
 - **Last session timestamp** - When you last worked on the project
 - **Build status** - Current compilation state
 - **Phase progress** - Current implementation phase and tasks
 
+## Cache Files
+
+The cache system reads from `~/.claude/ollama-oxide/`:
+- **project.cache** - Single unified cache file (primary)
+- **project.cache.bkp** - Backup file (fallback if primary is corrupted)
+- Legacy `project_{hash}.cache` files are also supported for migration
+
 ## Context Analysis Process
 
 After loading the cache, I will:
 
-1. **🔍 Verify Cache** - Confirm cache exists and is valid
-2. **📊 Display Summary** - Show project info, workspace structure, and files
-3. **📋 Read Current Phase** - Extract current implementation phase from definition.md
-4. **📁 List Critical Files** - Enumerate all tracked documentation and specs
-5. **🎯 Identify Focus** - Determine what's in progress from definition.md
-6. **🚀 Ready State** - Confirm readiness to continue work
+1. **Verify Cache** - Confirm cache exists and is valid (with backup fallback)
+2. **Display Session History** - Show recent sessions with timestamps
+3. **Display Summary** - Show project info, architecture, and files
+4. **Read Current Phase** - Extract current implementation phase from definition.md
+5. **Show Decisions** - Display recent architectural decisions from DECISIONS.md
+6. **Show Blockers** - Display active blockers from BLOCKERS.md
+7. **Show Next Steps** - Display pending TODOs from DEV_NOTES.md
+8. **Ready State** - Confirm readiness to continue work
 
 ## What I Remember
 
 From the cache and critical files, I understand:
 
-- **Project Structure**: 5-crate Cargo workspace for Ollama API integration
-- **Implementation Strategy**: 4-phase plan (Foundation → Primitives → Conveniences → Samples)
-- **Current Phase**: Phase 1 (v0.1.0) - Foundation + HTTP Core
+- **Project Structure**: Single Rust crate with feature-gated modules
+- **Implementation Strategy**: 4-phase plan (Foundation > Primitives > Conveniences > Samples)
+- **Current Phase**: Phase 1 (v0.1.0) - Foundation + HTTP Core (complete with 12 endpoints)
 - **API Coverage**: 12 total endpoints (5 simple, 2 medium, 5 complex with streaming)
 - **Build System**: Cargo with Rust 2024 edition
 - **Dependencies**: tokio, reqwest, serde, async-trait
 - **Testing**: Unit and integration test framework
 - **Documentation**: Comprehensive specs and guides
-
-## User Experience
-
-You'll see clear progress indicators as the script:
-- 🔍 Searches for your previous context
-- 📝 Loads cache file with project metadata
-- 📋 Displays project information and structure
-- 📚 Lists all critical files being tracked
-- 📄 Shows API specifications by complexity
-- 📈 Reports session count and timestamps
-- 🔨 Confirms build status
-- 📍 Shows current phase and focus areas
-- 🚀 Confirms readiness to continue
-
-The entire process takes just seconds, and you'll know exactly what context has been restored before we proceed with your next task.
 
 ## If Cache Not Found
 
