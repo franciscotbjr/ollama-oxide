@@ -15,11 +15,11 @@ use std::time::Duration;
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create client with custom configuration
-    let config = ClientConfig {
-        base_url: "http://localhost:11434".to_string(),
-        timeout: Duration::from_secs(10),
-        max_retries: 5,
-    };
+    let config = ClientConfig::new(
+        "http://localhost:11434".to_string(),
+        Duration::from_secs(10),
+        5,
+    )?;
 
     let client = OllamaClient::new(config)?;
 

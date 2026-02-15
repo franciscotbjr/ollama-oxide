@@ -20,7 +20,8 @@
       "Bash(ls:*)",
       "Bash(git mv:*)",
       "Bash(git status:*)",
-      "Bash(else echo \"❌ Cache script not found\")"
+      "Bash(else echo \"❌ Cache script not found\")",
+      "Bash(perl -0777 -pi -e:*)"
     ],
     "deny": []
   }

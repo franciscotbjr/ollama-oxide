@@ -1,8 +1,8 @@
 # ollama-oxide Project Definition
 
-**Document Version:** 1.7
-**Last Updated:** 2026-02-03
-**Project Version:** 0.1.0
+**Document Version:** 1.8
+**Last Updated:** 2026-02-15
+**Project Version:** 0.1.2
 
 ## Executive Summary
 
@@ -85,9 +85,11 @@ Each module follows single-concern file structure:
 - Automatic retry logic with exponential backoff
 - Separate async (`tokio::time::sleep`) and sync (`std::thread::sleep`) helpers
 - Marked `pub(super)` for module-internal use
+- `ClientConfig` with private fields and validated constructors (URL validation at construction time)
+- Ergonomic constructors: `OllamaClient::with_base_url()`, `with_base_url_and_timeout()`, `default()`
 
 **Feature:** `http` (default)
-**Status:** Implementation in progress
+**Status:** Implementation complete
 
 #### 3. tools (Module)
 **Purpose:** Tool types and ergonomic function calling with auto-generated JSON schemas.

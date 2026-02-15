@@ -14,6 +14,8 @@ use std::fs;
 use std::path::PathBuf;
 
 const MAX_SESSIONS: usize = 10;
+const MAX_TASK_LEN: usize = 200;
+const MAX_SUMMARY_LEN: usize = 500;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct SessionEntry {
@@ -241,6 +243,30 @@ fn parse_cli_args() -> (String, String) {
     (task, summary)
 }
 
+/// Sanitize text for safe JSON storage: remove control characters and truncate.
+fn sanitize_text(text: &str, max_len: usize) -> String {
+    // Replace control characters (except space) with spaces
+    let cleaned: String = text
+        .chars()
+        .map(|c| if c.is_control() && c != ' ' { ' ' } else { c })
+        .collect();
+
+    // Collapse multiple whitespace into single space
+    let collapsed: String = cleaned.split_whitespace().collect::<Vec<&str>>().join(" ");
+
+    // Truncate at max_len chars (not bytes) on a word boundary
+    if collapsed.chars().count() <= max_len {
+        collapsed
+    } else {
+        let truncated: String = collapsed.chars().take(max_len).collect();
+        // Try to cut at last space to avoid mid-word truncation
+        match truncated.rfind(' ') {
+            Some(pos) if pos > truncated.len() / 2 => format!("{}...", &truncated[..pos]),
+            _ => format!("{}...", truncated),
+        }
+    }
+}
+
 fn cleanup_old_cache_files(cache_dir: &PathBuf) {
     // Remove old hash-based cache files (project_{hash}.cache)
     if let Ok(entries) = fs::read_dir(cache_dir) {
@@ -321,6 +347,10 @@ fn main() {
 
     // Parse CLI args for session context
     let (task, summary) = parse_cli_args();
+
+    // Sanitize and truncate to prevent cache corruption from oversized input
+    let task = sanitize_text(&task, MAX_TASK_LEN);
+    let summary = sanitize_text(&summary, MAX_SUMMARY_LEN);
 
     // Add new session entry to the array
     let new_entry = SessionEntry {

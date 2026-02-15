@@ -374,11 +374,11 @@ async fn test_embed_async_success() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = EmbedRequest::new("nomic-embed-text", "Hello, world!");
@@ -412,11 +412,11 @@ async fn test_embed_async_multiple_inputs() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = EmbedRequest::new(
@@ -440,11 +440,11 @@ async fn test_embed_async_model_not_found() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = EmbedRequest::new("nonexistent-model", "Hello");
@@ -475,11 +475,11 @@ async fn test_embed_async_retry_on_server_error() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 1,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        1,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = EmbedRequest::new("model", "Hello");
@@ -502,11 +502,11 @@ async fn test_embed_async_max_retries_exceeded() {
         .create_async()
         .await;
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(1),
-        max_retries: 2,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(1),
+        2,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = EmbedRequest::new("model", "Hello");
@@ -537,11 +537,11 @@ fn test_embed_sync_success() {
         )
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = EmbedRequest::new("nomic-embed-text", "Hello");
@@ -558,11 +558,11 @@ fn test_embed_sync_model_not_found() {
 
     let mock = server.mock("POST", "/api/embed").with_status(404).create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 0,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        0,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = EmbedRequest::new("nonexistent", "Hello");
@@ -591,11 +591,11 @@ fn test_embed_sync_retry_on_server_error() {
         .expect(1)
         .create();
 
-    let config = ClientConfig {
-        base_url: server.url(),
-        timeout: Duration::from_secs(5),
-        max_retries: 1,
-    };
+    let config = ClientConfig::new(
+        server.url(),
+        Duration::from_secs(5),
+        1,
+    ).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let request = EmbedRequest::new("model", "Hello");
