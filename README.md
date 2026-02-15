@@ -1,4 +1,8 @@
 # ollama-oxide
+  [![Crates.io](https://crates.io/crates/ollama-oxide)](https://crates.io/crates/ollama-oxide)
+  [![Documentation](https://docs.rs/ollama_oxide/badge.svg)](https://docs.rs/ollama_oxide)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org/)
 <div align="center">
   <img src="assets/logo.svg" alt="ollama-oxide Logo" width="1200" height="300">
 </div>

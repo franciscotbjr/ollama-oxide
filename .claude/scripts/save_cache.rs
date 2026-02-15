@@ -13,8 +13,11 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(Serialize, Deserialize, Debug, Default)]
-struct SessionContext {
+const MAX_SESSIONS: usize = 10;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct SessionEntry {
+    datetime: String,
     task: String,
     summary: String,
 }
@@ -55,9 +58,9 @@ struct ProjectContext {
     cache_version: String,
     project_hash: String,
 
-    // Session context (what was done)
+    // Session context: array of last 10 sessions ordered by datetime
     #[serde(default)]
-    session_context: SessionContext,
+    session_context: Vec<SessionEntry>,
 }
 
 #[derive(Deserialize)]
@@ -96,17 +99,41 @@ fn get_project_hash() -> String {
     format!("{:08x}", hash)
 }
 
+fn get_cache_file(cache_dir: &PathBuf) -> PathBuf {
+    cache_dir.join("project.cache")
+}
+
+fn get_backup_file(cache_dir: &PathBuf) -> PathBuf {
+    cache_dir.join("project.cache.bkp")
+}
+
 fn load_existing_cache(cache_file: &PathBuf) -> Option<ProjectContext> {
     if cache_file.exists() {
         if let Ok(content) = fs::read_to_string(cache_file) {
             if let Ok(context) = serde_json::from_str::<ProjectContext>(&content) {
-                println!("Found existing cache (Session #{})", context.total_sessions + 1);
+                println!(
+                    "Found existing cache (Session #{}, {} previous sessions recorded)",
+                    context.total_sessions + 1,
+                    context.session_context.len()
+                );
                 return Some(context);
             }
         }
     }
     println!("Creating new cache file");
     None
+}
+
+fn create_backup(cache_dir: &PathBuf) {
+    let cache_file = get_cache_file(cache_dir);
+    let backup_file = get_backup_file(cache_dir);
+
+    if cache_file.exists() {
+        match fs::copy(&cache_file, &backup_file) {
+            Ok(_) => println!("📦 Backup created: {}", backup_file.display()),
+            Err(e) => println!("⚠️  Failed to create backup: {}", e),
+        }
+    }
 }
 
 fn read_cargo_toml() -> Result<CargoToml, Box<dyn std::error::Error>> {
@@ -176,7 +203,6 @@ fn find_impl_files() -> Vec<String> {
 }
 
 fn check_build_status() -> String {
-    // Check if we can at least parse Cargo.toml
     if PathBuf::from("Cargo.toml").exists() {
         match read_cargo_toml() {
             Ok(_) => "Cargo.toml valid".to_string(),
@@ -187,7 +213,7 @@ fn check_build_status() -> String {
     }
 }
 
-fn parse_cli_args() -> SessionContext {
+fn parse_cli_args() -> (String, String) {
     let args: Vec<String> = env::args().collect();
     let mut task = String::new();
     let mut summary = String::new();
@@ -212,13 +238,29 @@ fn parse_cli_args() -> SessionContext {
         i += 1;
     }
 
-    SessionContext { task, summary }
+    (task, summary)
+}
+
+fn cleanup_old_cache_files(cache_dir: &PathBuf) {
+    // Remove old hash-based cache files (project_{hash}.cache)
+    if let Ok(entries) = fs::read_dir(cache_dir) {
+        for entry in entries.flatten() {
+            if let Some(name) = entry.file_name().to_str() {
+                if name.starts_with("project_") && name.ends_with(".cache") && name != "project.cache" {
+                    match fs::remove_file(entry.path()) {
+                        Ok(_) => println!("🧹 Removed old cache file: {}", name),
+                        Err(e) => println!("⚠️  Failed to remove old cache file {}: {}", name, e),
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn main() {
     let cache_dir = get_cache_dir();
     let project_hash = get_project_hash();
-    let cache_file = cache_dir.join(format!("project_{}.cache", project_hash));
+    let cache_file = get_cache_file(&cache_dir);
 
     // Create cache directory if needed
     if !cache_dir.exists() {
@@ -227,11 +269,19 @@ fn main() {
     }
 
     // Load existing cache or start fresh
-    let existing_sessions = load_existing_cache(&cache_file)
-        .map(|ctx| ctx.total_sessions + 1)
-        .unwrap_or(1);
+    let existing = load_existing_cache(&cache_file);
+    let existing_sessions = existing.as_ref().map(|ctx| ctx.total_sessions + 1).unwrap_or(1);
+    let mut previous_session_entries: Vec<SessionEntry> = existing
+        .as_ref()
+        .map(|ctx| ctx.session_context.clone())
+        .unwrap_or_default();
 
     let current_time = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    let created_at = existing
+        .as_ref()
+        .map(|ctx| ctx.created_at.clone())
+        .unwrap_or_else(|| current_time.clone());
+
     let current_dir = env::current_dir()
         .expect("Could not get current directory")
         .to_string_lossy()
@@ -270,74 +320,83 @@ fn main() {
     let impl_files = find_impl_files();
 
     // Parse CLI args for session context
-    let session_context = parse_cli_args();
+    let (task, summary) = parse_cli_args();
+
+    // Add new session entry to the array
+    let new_entry = SessionEntry {
+        datetime: current_time.clone(),
+        task,
+        summary,
+    };
+    previous_session_entries.push(new_entry);
+
+    // Keep only the last MAX_SESSIONS entries, ordered by datetime
+    previous_session_entries.sort_by(|a, b| a.datetime.cmp(&b.datetime));
+    if previous_session_entries.len() > MAX_SESSIONS {
+        let start = previous_session_entries.len() - MAX_SESSIONS;
+        previous_session_entries = previous_session_entries[start..].to_vec();
+    }
 
     // Build context object
     let context = ProjectContext {
-        // Project identification
         project_name: project_name.clone(),
         version: version.clone(),
         repository,
         license,
-
-        // Build system
         build_system: "Cargo (workspace)".to_string(),
         language: "Rust".to_string(),
         edition,
-
-        // Workspace structure
         workspace_crates: workspace_crates.clone(),
         total_crates,
-
-        // Critical files inventory
         critical_files,
         apis_spec_files: apis_spec_files.clone(),
         impl_files: impl_files.clone(),
-
-        // Session tracking
         session_count: existing_sessions,
         total_sessions: existing_sessions,
-        created_at: current_time.clone(),
+        created_at,
         last_session: current_time,
         project_path: current_dir,
-
-        // Build status
         build_status: check_build_status(),
-
-        // Metadata
-        cache_version: "1.1".to_string(),
+        cache_version: "2.0".to_string(),
         project_hash: project_hash.clone(),
-
-        // Session context
-        session_context,
+        session_context: previous_session_entries,
     };
 
     // Save to cache file
     let json = serde_json::to_string_pretty(&context).expect("Failed to serialize context");
-    fs::write(&cache_file, json).expect("Failed to write cache file");
+    fs::write(&cache_file, &json).expect("Failed to write cache file");
+
+    // Create backup after successful write
+    create_backup(&cache_dir);
+
+    // Clean up old hash-based cache files
+    cleanup_old_cache_files(&cache_dir);
 
     println!("\n✅ Context saved successfully!\n");
     println!("📊 Cache Summary:");
     println!("  Location: {}", cache_file.display());
+    println!("  Backup: {}", get_backup_file(&cache_dir).display());
     println!("  Project: {} v{}", context.project_name, context.version);
     println!("  Session: #{}", context.session_count);
     println!("  Architecture: Single crate with {} modules", context.total_crates);
     println!("  API Specs: {} endpoints", apis_spec_files.len());
     println!("  Impl Plans: {} files", impl_files.len());
     println!("  Build: {}", context.build_status);
+    println!("  Sessions Recorded: {}", context.session_context.len());
     println!("\n📁 Critical Files Tracked:");
     for file in &context.critical_files {
         println!("  ✓ {}", file);
     }
 
-    // Display session context if provided
-    if !context.session_context.task.is_empty() || !context.session_context.summary.is_empty() {
-        println!("\n📝 Session Context Saved:");
-        if !context.session_context.task.is_empty() {
-            println!("  Task: {}", context.session_context.task);
-        }
-        if !context.session_context.summary.is_empty() {
-            println!("  Summary: {}", context.session_context.summary);
+    // Display session history
+    if !context.session_context.is_empty() {
+        println!("\n📝 Session History (last {}):", context.session_context.len());
+        for (i, entry) in context.session_context.iter().enumerate() {
+            let task_display = if entry.task.is_empty() { "(no task)" } else { &entry.task };
+            println!("  {}. [{}] {}", i + 1, entry.datetime, task_display);
+            if !entry.summary.is_empty() {
+                println!("     Summary: {}", entry.summary);
+            }
         }
     }
 
