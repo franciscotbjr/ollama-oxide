@@ -1,0 +1,74 @@
+---
+description: "Save session progress by updating memory.md and iteration files"
+alwaysApply: false
+---
+
+# Save Session
+
+Use at the end of a work session to persist progress so the next session can resume seamlessly.
+
+## Instructions
+
+### STEP 1 — Review Session Work
+
+Ask the developer:
+
+> "Let me save your session progress. Can you briefly describe what we accomplished today, or should I summarize from our conversation?"
+
+If the developer provides a summary, use it. Otherwise, generate a summary including:
+- Tasks completed
+- Files created or modified
+- Decisions made
+- Issues encountered
+
+### STEP 2 — Read Current State
+
+Read:
+- `.stateful-spec/memory.md` — Current project memory
+- Active iteration file from `.stateful-spec/history/` (the one marked in-progress)
+
+### STEP 3 — Update Iteration File
+
+Open the active iteration file and update:
+
+- Mark completed tasks as done (`- [x]`)
+- Add any new tasks that were discovered
+- Note any blockers in the Blockers section
+- Record decisions made during this session
+- Update status: `done` if all criteria met, `blocked` if stuck
+
+Show the developer the changes and ask:
+> "Here are the updates to the iteration file. Does this look correct?"
+
+Wait for confirmation before saving.
+
+### STEP 4 — Update Memory
+
+Update `.stateful-spec/memory.md`:
+
+- **Active Work:** Update status/description, or move to Recent Completions if done
+- **Recent Completions:** Add completed iterations with today's date
+- **Key Decisions:** Add significant decisions that persist beyond this iteration
+- **Constraints & Reminders:** Add new constraints or reminders discovered
+
+Show the developer the changes and ask:
+> "Here are the updates to memory.md. Does this look correct?"
+
+Wait for confirmation before saving.
+
+### STEP 5 — Confirm Save
+
+After updating both files, tell the developer:
+
+> "Session saved. Updated:"
+> - `.stateful-spec/history/[iteration-file].md` — [brief summary]
+> - `.stateful-spec/memory.md` — [brief summary]
+>
+> "Next time, use `@resume-session` to pick up where you left off."
+
+### STEP 6 — Suggest Commit (Optional)
+
+If there are uncommitted changes, ask:
+
+> "Would you like me to commit these memory updates?"
+> Suggested message: `chore: save session progress for [iteration name]`

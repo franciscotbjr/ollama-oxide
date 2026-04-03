@@ -1,0 +1,44 @@
+---
+description: "Generate tests for existing or new code following project conventions"
+alwaysApply: false
+---
+
+# Write Tests
+
+Use when you need to write tests for existing or newly implemented code.
+
+## Prerequisites
+
+- AI has access to the Project Definition (`.stateful-spec/project-definition.md`)
+- The code to be tested exists or is specified
+
+## Instructions
+
+Ask the developer what code needs tests, then write tests following these rules:
+
+1. **Use the project's testing conventions:**
+   - `#[tokio::test]` for async tests
+   - `mockito` for HTTP mocking — all `tests/` must pass without external services
+   - `#[cfg(test)] mod tests` for co-located unit tests in source files
+   - Integration tests in `tests/` directory, one file per feature area
+   - Feature-gated tests use `required-features` in `Cargo.toml`
+
+2. **Follow the naming convention:**
+   - `test_{what_is_being_tested}_{scenario}` — e.g., `test_version_async_successful`
+
+3. **Cover three categories:**
+   - **Happy path** — Normal, expected usage
+   - **Edge cases** — Boundary values, empty inputs, large inputs, None variants
+   - **Error cases** — Invalid inputs, HTTP errors, deserialization failures, retry exhaustion
+
+4. **Test rules:**
+   - Each test must be independent — no shared mutable state between tests
+   - Use descriptive test names that explain what is being verified
+   - Include setup/teardown if needed (mockito server setup)
+   - Keep tests focused — one assertion concept per test
+   - Tests in `tests/` must NEVER require a running Ollama server
+
+5. **Place tests correctly:**
+   - Internal/private behavior: `#[cfg(test)] mod tests` in the source file
+   - Public API contracts: `tests/*.rs`
+   - Real Ollama integration: `examples/*.rs`

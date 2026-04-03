@@ -1,0 +1,31 @@
+---
+description: "Generate a structured commit message for staged changes"
+alwaysApply: false
+---
+
+# Write Commit Message
+
+Use after completing a unit of work to generate a well-structured commit message.
+
+## Instructions
+
+Review the staged changes (run `git diff --cached` or `git status`), then generate a commit message following these rules:
+
+1. **Subject line:** Short, imperative mood, 50 characters max
+   - Examples: "Add user authentication endpoint", "Fix retry logic for 429 responses"
+   - Use conventional commit prefixes when appropriate: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`
+2. **Blank line** after the subject
+3. **Body:** Explain WHAT changed and WHY (not HOW — the code shows how)
+4. **References:** If this closes an issue or relates to a ticket, include the reference
+5. **Keep it concise** — aim for clarity, not completeness
+
+Format:
+```
+<type>: <subject line>
+
+<body — what changed and why>
+
+<optional: references>
+```
+
+Present the message to the developer for review before committing.

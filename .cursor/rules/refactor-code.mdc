@@ -1,0 +1,39 @@
+---
+description: "Step-by-step refactoring with behavioral preservation checks"
+alwaysApply: false
+---
+
+# Refactor Code
+
+Use when you need to restructure existing code without changing its external behavior.
+
+## Prerequisites
+
+- Existing tests pass (baseline for behavior preservation)
+- AI has access to the Project Definition (`.stateful-spec/project-definition.md`)
+
+## Instructions
+
+Ask the developer:
+
+> "What code needs refactoring, and why? What's the desired outcome?"
+
+Then:
+
+1. **Analyze the current code** and identify the specific problems
+2. **Propose a refactoring plan** with ordered steps — each step should be independently committable
+3. **For each step**, explain what changes and why
+4. **Implement the refactoring step by step**
+5. **After each step**, confirm that:
+   - External behavior is unchanged
+   - All existing tests should still pass
+   - The code follows the Project Definition's conventions:
+     - Single concern per file
+     - `mod.rs` as facade only
+     - Correct visibility (`pub(super)`, `pub(crate)`, private)
+     - Feature gating where appropriate
+     - Dependency hierarchy respected (inference types remain pure)
+6. **Write new tests** if needed to cover the refactored code
+7. **Do NOT change any public API, interface, or behavior** unless explicitly discussed
+
+If the refactoring reveals a bug, flag it separately — do not mix behavior changes with structural refactoring.

@@ -1,0 +1,63 @@
+---
+description: "Stateful Spec methodology for ollama-oxide — invoke with @stateful-spec"
+alwaysApply: false
+---
+
+# Stateful Spec Methodology
+
+This project uses the **Stateful Spec** methodology for AI-assisted development. All project context, conventions, and iteration history live in `.stateful-spec/`.
+
+## Entry Points
+
+1. **`.stateful-spec/memory.md`** — Current project state, active work, constraints. **Read this first** at the start of every session.
+2. **`.stateful-spec/project-definition.md`** — Technology stack, conventions, quality gates. The source of truth for how to build.
+3. **`.stateful-spec/methodology/`** — Full methodology documentation (phases, roles, decision framework).
+4. **`.stateful-spec/history/`** — Iteration tracking files (one per feature/bugfix/refactor).
+
+## Methodology Phases
+
+Every unit of work follows: **Analyze → Plan → Specify → Implement → Verify**
+
+- Phase guides: `.stateful-spec/methodology/phases/01-analyze.md` through `05-verify.md`
+- Roles and expectations: `.stateful-spec/methodology/roles.md`
+- Decision framework: `.stateful-spec/methodology/decision-framework.md`
+
+## Operation Prompts
+
+The following operations are available. Copy the relevant instructions when needed:
+
+### Resume Session
+Load `.stateful-spec/` context, read `memory.md` and `project-definition.md`, summarize current state, and pick up where you left off. Read all methodology files and history files to understand the full context.
+
+### Save Session
+At the end of a work session: review what was accomplished, update the active iteration file in `.stateful-spec/history/`, update `.stateful-spec/memory.md` with current state (active work, completions, decisions), and suggest a commit for the memory updates.
+
+### Create Technical Spec
+Analyze a work request and produce a complete technical specification. Combine analysis and specification into one interaction. Store the spec in `impl/` following the existing numbered convention.
+
+### Write Tests
+Generate tests for existing or new code following the project's testing conventions: `#[tokio::test]` for async, `mockito` for HTTP mocking, `#[cfg(test)] mod tests` for unit tests, `tests/` for integration tests. Cover happy path, edge cases, and error cases.
+
+### Debug Issue
+Perform root cause analysis on a bug or unexpected behavior. Identify the most likely cause, suggest diagnostic steps, propose a minimal fix, and recommend a regression test.
+
+### Refactor Code
+Plan and execute refactoring without changing external behavior. Create a step-by-step plan where each step is independently committable. Verify all existing tests still pass after each step.
+
+### Review Changes
+Self-review code changes against: correctness, completeness, convention compliance (Project Definition), test coverage, security, performance, cleanliness, and scope.
+
+### Write Commit Message
+Generate a commit message with: imperative subject line (50 chars max), blank line, body explaining what changed and why (not how), optional issue references.
+
+### Update Documentation
+After implementing a feature: check if README.md, CHANGELOG.md, ARCHITECTURE.md, or API docs need updating. Produce updated content for each file that needs changes.
+
+## Rules for All Work
+
+1. All code must follow the conventions in the Project Definition
+2. All quality gates must pass before work is considered complete
+3. Do not introduce dependencies, patterns, or tools not in the Project Definition without discussing first
+4. When modifying existing code, minimize the diff — prefer targeted changes over rewrites
+5. Write tests for any code you add or modify
+6. Make small, logical commits that leave the codebase in a working state

@@ -1,0 +1,33 @@
+---
+description: "Root cause analysis and fix for bugs or unexpected behavior"
+alwaysApply: false
+---
+
+# Debug Issue
+
+Use when you encounter a bug or unexpected behavior and need help diagnosing and fixing it.
+
+## Instructions
+
+Ask the developer to describe the problem:
+
+> "What's the issue? Please share the error message, unexpected behavior, or failing test."
+
+Then follow this process:
+
+1. **Analyze the error and relevant code**
+2. **Identify the most likely root cause** — explain your reasoning
+3. **If uncertain**, list the top 2-3 possible causes ranked by likelihood
+4. **For each possible cause**, suggest a diagnostic step (a log statement, a test, a check) to confirm or eliminate it
+5. **Once root cause is identified**, propose a minimal fix that:
+   - Addresses the root cause, not just the symptom
+   - Is as small as possible — prefer single-line changes when sufficient
+   - Does not introduce new issues
+   - Follows the Project Definition's conventions
+6. **Suggest a regression test** that would catch this bug in the future
+
+**Rules:**
+- Do NOT make broad changes or refactor during debugging
+- Focus on understanding and fixing the specific issue
+- Keep the fix minimal — targeted changes over rewrites
+- All fixes must follow the project's error handling patterns (thiserror, Result alias)

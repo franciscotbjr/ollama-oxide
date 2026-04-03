@@ -1,0 +1,36 @@
+---
+description: "Create a technical specification for a new piece of work"
+alwaysApply: false
+---
+
+# Create Technical Specification
+
+Use when you need to write a technical specification for a new feature, endpoint, bugfix, or refactoring. Combines analysis and specification into one interaction.
+
+## Prerequisites
+
+- AI has access to the Project Definition (`.stateful-spec/project-definition.md`)
+- You have a description of what needs to be built or changed
+
+## Instructions
+
+Ask the developer:
+
+> "What work do you need a specification for? Please describe the feature, bug, or change."
+
+Then:
+
+1. **Analyze the work** — Assess complexity, dependencies, key considerations
+2. **Fill the specification** with specific, actionable content:
+   - **Description** — What is being built or changed
+   - **Acceptance Criteria** — Measurable and testable criteria (as checkboxes)
+   - **Data/Type Definitions** — Inputs, outputs, data structures (with Rust types)
+   - **Test Scenarios** — Happy path, edge cases, AND error cases
+   - **Dependencies** — What this spec depends on
+   - **Implementation Notes** — Hints, constraints, known pitfalls
+3. **Ensure convention compliance** — All code examples, naming, and patterns follow the Project Definition
+4. **Flag unknowns** — Mark anything uncertain as an open question rather than guessing
+
+The specification should be detailed enough to implement without needing clarifying questions.
+
+Store the completed spec in `impl/` following the existing numbered convention (e.g., `impl/21-[name].md`), and create a corresponding iteration file in `.stateful-spec/history/`.
