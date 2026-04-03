@@ -7,12 +7,15 @@ alwaysApply: false
 
 This project uses the **Stateful Spec** methodology for AI-assisted development. All project context, conventions, and iteration history live in `.stateful-spec/`.
 
+Upstream methodology and prompts are synced from [franciscotbjr/stateful-spec](https://github.com/franciscotbjr/stateful-spec) (`main`). Vendored copies: **`.stateful-spec/methodology/`**, **`.stateful-spec/templates/`**, **`.stateful-spec/prompts/`**. Cursor rules under **`.cursor/rules/`** are generated from **`.stateful-spec/prompts/operations/*.md`** (plus project-specific footers).
+
 ## Entry Points
 
 1. **`.stateful-spec/memory.md`** — Current project state, active work, constraints. **Read this first** at the start of every session.
 2. **`.stateful-spec/project-definition.md`** — Technology stack, conventions, quality gates. The source of truth for how to build.
 3. **`.stateful-spec/methodology/`** — Full methodology documentation (phases, roles, decision framework).
-4. **`.stateful-spec/history/`** — Iteration tracking files (one per feature/bugfix/refactor).
+4. **`.stateful-spec/templates/`** — Specification, project, and implementation templates (from upstream).
+5. **`.stateful-spec/history/`** — Iteration tracking files (one per feature/bugfix/refactor).
 
 ## Methodology Phases
 
@@ -22,36 +25,25 @@ Every unit of work follows: **Analyze → Plan → Specify → Implement → Ver
 - Roles and expectations: `.stateful-spec/methodology/roles.md`
 - Decision framework: `.stateful-spec/methodology/decision-framework.md`
 
-## Operation Prompts
+## Operation prompts (Cursor)
 
-The following operations are available. Copy the relevant instructions when needed:
+Invoke with `@` and the rule name (same stem as the file under `.cursor/rules/`):
 
-### Resume Session
-Load `.stateful-spec/` context, read `memory.md` and `project-definition.md`, summarize current state, and pick up where you left off. Read all methodology files and history files to understand the full context.
+| Cursor rule | Purpose |
+|-------------|---------|
+| `@resume-session` | Load context, summarize state, pick up where you left off |
+| `@save-session` | Update `memory.md` and iteration files before ending a session |
+| `@create-technical-spec` | Analyze a request and produce a specification |
+| `@write-tests` | Generate tests per Project Definition |
+| `@debug-issue` | Root cause, minimal fix, regression test |
+| `@refactor-code` | Refactor with behavioral preservation |
+| `@review-changes` | Self-review before commit or PR |
+| `@write-commit-message` | Structured commit message |
+| `@update-documentation` | README, CHANGELOG, ARCHITECTURE, rustdoc |
 
-### Save Session
-At the end of a work session: review what was accomplished, update the active iteration file in `.stateful-spec/history/`, update `.stateful-spec/memory.md` with current state (active work, completions, decisions), and suggest a commit for the memory updates.
+Canonical upstream text for each operation lives in **`.stateful-spec/prompts/operations/<name>.md`**.
 
-### Create Technical Spec
-Analyze a work request and produce a complete technical specification. Combine analysis and specification into one interaction. Store the spec in `impl/` following the existing numbered convention.
-
-### Write Tests
-Generate tests for existing or new code following the project's testing conventions: `#[tokio::test]` for async, `mockito` for HTTP mocking, `#[cfg(test)] mod tests` for unit tests, `tests/` for integration tests. Cover happy path, edge cases, and error cases.
-
-### Debug Issue
-Perform root cause analysis on a bug or unexpected behavior. Identify the most likely cause, suggest diagnostic steps, propose a minimal fix, and recommend a regression test.
-
-### Refactor Code
-Plan and execute refactoring without changing external behavior. Create a step-by-step plan where each step is independently committable. Verify all existing tests still pass after each step.
-
-### Review Changes
-Self-review code changes against: correctness, completeness, convention compliance (Project Definition), test coverage, security, performance, cleanliness, and scope.
-
-### Write Commit Message
-Generate a commit message with: imperative subject line (50 chars max), blank line, body explaining what changed and why (not how), optional issue references.
-
-### Update Documentation
-After implementing a feature: check if README.md, CHANGELOG.md, ARCHITECTURE.md, or API docs need updating. Produce updated content for each file that needs changes.
+**Workflow refresh:** To re-sync from upstream later, follow **`.stateful-spec/prompts/initialization/update-project.md`**.
 
 ## Rules for All Work
 

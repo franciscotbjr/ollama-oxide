@@ -13,7 +13,7 @@
 
 - Feature request, bug report, or change description
 - Existing codebase (if applicable)
-- Project Definition (`.stateful-spec/project-definition.md`)
+- Project Definition (`templates/project/project-definition.md`)
 
 ## Activities
 
@@ -62,6 +62,8 @@ A clear understanding documented as:
 2. **Complexity breakdown** — Simple/medium/complex categorization of sub-tasks
 3. **Dependency list** — What this work touches
 4. **Open questions** — Unknowns that need resolution
+
+This can be a section in an issue, a chat message, or a dedicated analysis document. The format matters less than having the information explicitly stated.
 
 ## Completion Criteria
 

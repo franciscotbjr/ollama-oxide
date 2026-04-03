@@ -47,7 +47,7 @@ Evaluate alternatives using these criteria (in order of priority):
 
 ### Step 4: Decide and Record
 
-Make the decision and record it using an Architecture Decision Record.
+Make the decision and record it using the Architecture Decision Record template (`templates/project/architecture-decision.md`).
 
 The record should capture:
 - **What** was decided
@@ -89,9 +89,9 @@ When revisiting, create a **new ADR** that supersedes the old one. Don't delete 
 ```
 Is this decision significant?
   ├── No  → Just decide and move on
-  └── Yes →
+  └── Yes → 
        ├── List alternatives
        ├── Apply criteria (consistency > simplicity > reversibility)
        ├── Choose and record (ADR)
-       └── Communicate (PR, comments, Project Definition update)
+       └── Communicate (PR, comments, Profile update)
 ```

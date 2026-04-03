@@ -10,7 +10,7 @@
 ## Inputs
 
 - Analysis output (requirements, complexity, dependencies, open questions)
-- Project Definition (`.stateful-spec/project-definition.md`)
+- Project Definition (`templates/project/project-definition.md`)
 - Existing codebase architecture (if applicable)
 
 ## Activities
@@ -24,7 +24,7 @@ Define how the work fits into the system:
 - **What patterns apply?** — Reference the Project Definition's conventions section
 - **What changes to existing code?** — New files, modified files, deleted files
 
-For significant decisions, use the Architecture Decision Record process.
+For significant decisions, use the Architecture Decision Record template (`templates/project/architecture-decision.md`).
 
 ### 2. Milestone Definition
 

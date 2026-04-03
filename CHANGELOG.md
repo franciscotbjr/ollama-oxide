@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+- **Developer workflow:** Vendored [Stateful Spec](https://github.com/franciscotbjr/stateful-spec) methodology, templates, and prompt sources under `.stateful-spec/` (templates, prompts, refreshed methodology). Cursor operation rules align with upstream `prompts/operations/`. See `.stateful-spec/history/021-stateful-spec-sync.md`.
 - **Feature-based library design**: Modular opt-in architecture via Cargo features
   - `tools` feature: Ergonomic function calling with auto-generated JSON schemas
     - `Tool` trait for type-safe tool definitions

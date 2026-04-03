@@ -17,24 +17,15 @@
 
 ### 1. Run Quality Gates
 
-Execute every quality gate defined in the Project Definition:
+Execute every quality gate defined in the Project Definition. Common examples:
 
-```bash
-# Linter
-cargo clippy --all-features -- -D warnings
-
-# Formatter check
-cargo fmt --check
-
-# Tests
-cargo test --all-features
-
-# Build
-cargo build --all-features
-
-# Doc build
-cargo doc --all-features --no-deps
-```
+| Gate | Example Commands | Purpose |
+|------|-----------------|---------|
+| Linter | `eslint .`, `cargo clippy`, `ruff check .` | Code quality |
+| Formatter | `prettier --check .`, `cargo fmt --check`, `black --check .` | Consistent style |
+| Type checker | `tsc --noEmit`, `mypy .`, `cargo check` | Type safety |
+| Tests | `jest`, `cargo test`, `pytest` | Correctness |
+| Build | `npm run build`, `cargo build`, `go build ./...` | Compilation |
 
 **All gates must pass.** If any gate fails, fix the issues before proceeding.
 
@@ -50,7 +41,7 @@ If any criterion is not met, return to the Implement phase.
 
 ### 3. Review Changes
 
-Perform a self-review:
+Perform a self-review (or use the `prompts/operations/review-changes.md` prompt):
 
 - **Diff review** — Are all changes intentional? Any debug code left?
 - **Convention check** — Does everything follow the Project Definition?
@@ -59,7 +50,7 @@ Perform a self-review:
 
 ### 4. Update Documentation
 
-Update as needed:
+Use the `prompts/operations/update-documentation.md` prompt or manually update:
 
 - **README** — If the feature changes setup, usage, or API surface
 - **CHANGELOG** — Add entry for the change
@@ -71,7 +62,7 @@ Update as needed:
 
 Depending on the project:
 
-- **Write commit message** — Clear, descriptive commit
+- **Write commit message** — Use `prompts/operations/write-commit-message.md`
 - **Create PR/MR** — With description referencing the spec
 - **Tag release** — If this completes a version milestone
 - **Deploy** — If the project has a deployment pipeline
@@ -103,4 +94,4 @@ The iteration is complete. Next steps:
 
 - **More milestones remaining?** — Return to [Phase 3: Specify](03-specify.md) for the next milestone
 - **New work unit?** — Return to [Phase 1: Analyze](01-analyze.md)
-- **Session ending?** — Use save-session to generate a session summary
+- **Session ending?** — Use `prompts/operations/save-session.md` to generate a session summary
