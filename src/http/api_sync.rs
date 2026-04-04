@@ -5,6 +5,8 @@ use crate::{
     Result, VersionResponse,
 };
 
+use super::streaming::ChatStreamBlocking;
+
 #[cfg(feature = "model")]
 use crate::{
     CopyRequest, CreateRequest, CreateResponse, DeleteRequest, ListResponse, PsResponse,
@@ -324,6 +326,40 @@ pub trait OllamaApiSync: Send + Sync {
     /// ```
     fn chat_blocking(&self, request: &ChatRequest) -> Result<ChatResponse>;
 
+    /// Chat completion with streaming (NDJSON), blocking iterator.
+    ///
+    /// Sends `stream: true` regardless of the value on `request`. Each line of the
+    /// response body is deserialized as [`ChatResponse`].
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - Chat request. Streaming methods set `stream` to `true` on a
+    ///   clone of this value before sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the HTTP status is not success before the body is read.
+    /// Per-line JSON errors are yielded as [`Err`](crate::Result) from the iterator.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use ollama_oxide::{ChatMessage, ChatRequest, OllamaApiSync, OllamaClient};
+    ///
+    /// # fn example() -> ollama_oxide::Result<()> {
+    /// let client = OllamaClient::default()?;
+    /// let request = ChatRequest::new("qwen3:0.6b", [ChatMessage::user("Hi!")]);
+    /// for ev in client.chat_stream_blocking(&request)? {
+    ///     let chunk = ev?;
+    ///     if let Some(t) = chunk.content() {
+    ///         print!("{}", t);
+    ///     }
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    fn chat_stream_blocking(&self, request: &ChatRequest) -> Result<ChatStreamBlocking>;
+
     /// Create a custom model (blocking, non-streaming)
     ///
     /// Creates a new model from an existing model with custom configuration.
@@ -480,6 +516,13 @@ impl OllamaApiSync for OllamaClient {
     fn chat_blocking(&self, request: &ChatRequest) -> Result<ChatResponse> {
         let url = self.config.url(Endpoints::CHAT);
         self.post_blocking_with_retry(&url, request)
+    }
+
+    fn chat_stream_blocking(&self, request: &ChatRequest) -> Result<ChatStreamBlocking> {
+        let mut req = request.clone();
+        req.stream = Some(true);
+        let url = self.config.url(Endpoints::CHAT);
+        self.post_ndjson_stream_blocking(&url, &req)
     }
 
     #[cfg(feature = "model")]

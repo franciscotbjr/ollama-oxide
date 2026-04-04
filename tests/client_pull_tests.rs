@@ -5,11 +5,7 @@ use ollama_oxide::{ClientConfig, OllamaApiAsync, OllamaApiSync, OllamaClient, Pu
 use std::time::Duration;
 
 fn make_config(base_url: String) -> ClientConfig {
-    ClientConfig::new(
-        base_url,
-        Duration::from_secs(30),
-        3,
-    ).unwrap()
+    ClientConfig::new(base_url, Duration::from_secs(30), 3).unwrap()
 }
 
 // ============================================================================

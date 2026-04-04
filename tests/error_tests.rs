@@ -67,6 +67,14 @@ fn test_timeout_error_display() {
 }
 
 #[test]
+fn test_stream_error_display() {
+    let error = Error::StreamError("invalid NDJSON line".to_string());
+    let display = format!("{}", error);
+    assert!(display.contains("Stream error"));
+    assert!(display.contains("invalid NDJSON"));
+}
+
+#[test]
 fn test_max_retries_exceeded_error_display() {
     let error = Error::MaxRetriesExceededError(3);
     let display = format!("{}", error);

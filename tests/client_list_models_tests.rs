@@ -28,11 +28,7 @@ async fn test_list_models_async_with_mock() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        0,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 0).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let response = client.list_models().await.unwrap();
@@ -56,11 +52,7 @@ async fn test_list_models_async_empty_response() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        0,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 0).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let response = client.list_models().await.unwrap();
@@ -99,11 +91,7 @@ async fn test_list_models_async_full_response() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        0,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 0).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let response = client.list_models().await.unwrap();
@@ -149,11 +137,7 @@ async fn test_list_models_async_multiple_models() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        0,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 0).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let response = client.list_models().await.unwrap();
@@ -187,11 +171,7 @@ async fn test_list_models_async_retry_on_error() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        1,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 1).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let response = client.list_models().await.unwrap();
@@ -227,11 +207,7 @@ fn test_list_models_sync_with_mock() {
         )
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        0,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 0).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let response = client.list_models_blocking().unwrap();
@@ -254,11 +230,7 @@ fn test_list_models_sync_empty_response() {
         .with_body(r#"{"models": []}"#)
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        0,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 0).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let response = client.list_models_blocking().unwrap();
@@ -296,11 +268,7 @@ fn test_list_models_sync_full_response() {
         )
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        0,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 0).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let response = client.list_models_blocking().unwrap();
@@ -339,11 +307,7 @@ fn test_list_models_sync_retry_on_error() {
         .expect(1)
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        1,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 1).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let response = client.list_models_blocking().unwrap();
@@ -370,11 +334,7 @@ async fn test_list_models_async_max_retries_exceeded() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(1),
-        2,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(1), 2).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.list_models().await;
@@ -393,11 +353,7 @@ fn test_list_models_sync_max_retries_exceeded() {
         .expect(3) // Initial + 2 retries
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(1),
-        2,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(1), 2).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.list_models_blocking();
