@@ -20,11 +20,7 @@ fn test_version_sync_successful() {
         .with_body(r#"{"version":"0.12.6"}"#)
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version_blocking();
@@ -47,11 +43,7 @@ fn test_version_sync_different_version() {
         .with_body(r#"{"version":"1.0.0"}"#)
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version_blocking();
@@ -81,11 +73,7 @@ fn test_version_sync_retry_logic_success_on_second_attempt() {
         .expect(1)
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version_blocking();
@@ -108,11 +96,7 @@ fn test_version_sync_max_retries_exceeded() {
         .expect(4) // max_retries + 1
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(1),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(1), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version_blocking();
@@ -132,11 +116,7 @@ fn test_version_sync_json_deserialization_error() {
         .with_body(r#"{"invalid":"json"}"#)
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version_blocking();
@@ -156,11 +136,7 @@ fn test_version_sync_invalid_json() {
         .with_body(r#"not valid json"#)
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version_blocking();
@@ -181,11 +157,7 @@ fn test_version_sync_concurrent_calls_from_threads() {
         .expect(10)
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 3).unwrap();
 
     let client = Arc::new(OllamaClient::new(config).unwrap());
     let mut handles = vec![];
@@ -216,11 +188,7 @@ fn test_version_sync_404_error() {
 
     let mock = server.mock("GET", "/api/version").with_status(404).create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        0,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 0).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version_blocking();
@@ -241,11 +209,7 @@ fn test_version_sync_with_zero_retries() {
         .expect(1)
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        0,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 0).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version_blocking();
@@ -264,11 +228,7 @@ fn test_version_sync_500_error() {
         .expect(4)
         .create();
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(1),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(1), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version_blocking();

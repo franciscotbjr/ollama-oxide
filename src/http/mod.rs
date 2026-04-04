@@ -44,8 +44,10 @@ mod api_sync;
 mod client;
 mod client_config;
 pub(crate) mod endpoints;
+mod streaming;
 
 pub use api_async::OllamaApiAsync;
 pub use api_sync::OllamaApiSync;
 pub use client::OllamaClient;
 pub use client_config::ClientConfig;
+pub use streaming::{ChatStream, ChatStreamBlocking};

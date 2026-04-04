@@ -1,0 +1,55 @@
+---
+description: "Stateful Spec methodology for ollama-oxide — invoke with @stateful-spec"
+alwaysApply: false
+---
+
+# Stateful Spec Methodology
+
+This project uses the **Stateful Spec** methodology for AI-assisted development. All project context, conventions, and iteration history live in `.stateful-spec/`.
+
+Upstream methodology and prompts are synced from [franciscotbjr/stateful-spec](https://github.com/franciscotbjr/stateful-spec) (`main`). Vendored copies: **`.stateful-spec/methodology/`**, **`.stateful-spec/templates/`**, **`.stateful-spec/prompts/`**. Cursor rules under **`.cursor/rules/`** are generated from **`.stateful-spec/prompts/operations/*.md`** (plus project-specific footers).
+
+## Entry Points
+
+1. **`.stateful-spec/memory.md`** — Current project state, active work, constraints. **Read this first** at the start of every session.
+2. **`.stateful-spec/project-definition.md`** — Technology stack, conventions, quality gates. The source of truth for how to build.
+3. **`.stateful-spec/methodology/`** — Full methodology documentation (phases, roles, decision framework).
+4. **`.stateful-spec/templates/`** — Specification, project, and implementation templates (from upstream).
+5. **`.stateful-spec/history/`** — Iteration tracking files (one per feature/bugfix/refactor).
+
+## Methodology Phases
+
+Every unit of work follows: **Analyze → Plan → Specify → Implement → Verify**
+
+- Phase guides: `.stateful-spec/methodology/phases/01-analyze.md` through `05-verify.md`
+- Roles and expectations: `.stateful-spec/methodology/roles.md`
+- Decision framework: `.stateful-spec/methodology/decision-framework.md`
+
+## Operation prompts (Cursor)
+
+Invoke with `@` and the rule name (same stem as the file under `.cursor/rules/`):
+
+| Cursor rule | Purpose |
+|-------------|---------|
+| `@resume-session` | Load context, summarize state, pick up where you left off |
+| `@save-session` | Update `memory.md` and iteration files before ending a session |
+| `@create-technical-spec` | Analyze a request and produce a specification |
+| `@write-tests` | Generate tests per Project Definition |
+| `@debug-issue` | Root cause, minimal fix, regression test |
+| `@refactor-code` | Refactor with behavioral preservation |
+| `@review-changes` | Self-review before commit or PR |
+| `@write-commit-message` | Structured commit message |
+| `@update-documentation` | README, CHANGELOG, ARCHITECTURE, rustdoc |
+
+Canonical upstream text for each operation lives in **`.stateful-spec/prompts/operations/<name>.md`**.
+
+**Workflow refresh:** To re-sync from upstream later, follow **`.stateful-spec/prompts/initialization/update-project.md`**.
+
+## Rules for All Work
+
+1. All code must follow the conventions in the Project Definition
+2. All quality gates must pass before work is considered complete
+3. Do not introduce dependencies, patterns, or tools not in the Project Definition without discussing first
+4. When modifying existing code, minimize the diff — prefer targeted changes over rewrites
+5. Write tests for any code you add or modify
+6. Make small, logical commits that leave the codebase in a working state

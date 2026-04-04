@@ -37,9 +37,10 @@ module/
 **Example:**
 ```
 http/
-├── mod.rs          # pub use config::ClientConfig; pub use client::OllamaClient;
+├── mod.rs          # pub use config::ClientConfig; pub use client::OllamaClient; streaming types
 ├── config.rs       # struct ClientConfig (private fields) + validated constructors + getters
-├── client.rs       # struct OllamaClient + constructors
+├── client.rs       # struct OllamaClient + constructors + HTTP helpers (including NDJSON streaming)
+├── streaming.rs    # ChatStream, ChatStreamBlocking (NDJSON over POST /api/chat)
 ├── api_async.rs    # trait OllamaApiAsync + impl
 └── api_sync.rs     # trait OllamaApiSync + impl
 ```
@@ -58,9 +59,10 @@ src/
 │   ├── chat_*.rs                   # Chat types (#[cfg(feature = "tools")] for tool fields)
 │   └── ...                         # Other inference types (generate, embed)
 ├── http/                           # Feature: "http" (default)
-│   ├── mod.rs                      # Re-exports: ClientConfig, OllamaClient, traits
+│   ├── mod.rs                      # Re-exports: ClientConfig, OllamaClient, traits, streaming types
 │   ├── config.rs                   # ClientConfig + impl Default
-│   ├── client.rs                   # OllamaClient + constructors + validation
+│   ├── client.rs                   # OllamaClient + constructors + retry/streaming helpers
+│   ├── streaming.rs                # ChatStream / ChatStreamBlocking (NDJSON chat)
 │   ├── api_async.rs                # OllamaApiAsync (#[cfg(feature = "model")] for model ops)
 │   └── api_sync.rs                 # OllamaApiSync (#[cfg(feature = "model")] for model ops)
 ├── tools/                          # Feature: "tools" (optional, requires schemars + futures)
@@ -223,6 +225,8 @@ required-features = ["model"]
 
 Update `src/http/api_async.rs` and `src/http/api_sync.rs` with new methods.
 
+**Streaming chat (`POST /api/chat` with `stream: true`):** Implement on `OllamaClient` using NDJSON helpers in `client.rs` and chunk types in `streaming.rs` (`ChatStream` / `ChatStreamBlocking`). Inference types stay in `inference/`; only the HTTP layer owns transport framing.
+
 ### New Configuration Option
 
 Add private field to `ClientConfig` in `src/http/config.rs`, update `impl Default`, add getter method, and update all constructors (`new()`, `with_base_url()`, `with_base_url_and_timeout()`).
@@ -336,6 +340,7 @@ classDiagram
         +embed(request)* Result~EmbedResponse~
         +generate(request)* Result~GenerateResponse~
         +chat(request)* Result~ChatResponse~
+        +chat_stream(request)* Result~ChatStream~
         +create_model(request)* Result~CreateResponse~
         +pull_model(request)* Result~PullResponse~
         +push_model(request)* Result~PushResponse~
@@ -352,6 +357,7 @@ classDiagram
         +embed_blocking(request)* Result~EmbedResponse~
         +generate_blocking(request)* Result~GenerateResponse~
         +chat_blocking(request)* Result~ChatResponse~
+        +chat_stream_blocking(request)* Result~ChatStreamBlocking~
         +create_model_blocking(request)* Result~CreateResponse~
         +pull_model_blocking(request)* Result~PullResponse~
         +push_model_blocking(request)* Result~PushResponse~

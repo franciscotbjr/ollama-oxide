@@ -5,6 +5,8 @@ use crate::{
     Result, VersionResponse,
 };
 
+use super::streaming::ChatStream;
+
 #[cfg(feature = "model")]
 use crate::{
     CopyRequest, CreateRequest, CreateResponse, DeleteRequest, ListResponse, PsResponse,
@@ -385,6 +387,43 @@ pub trait OllamaApiAsync: Send + Sync {
     /// ```
     async fn chat(&self, request: &ChatRequest) -> Result<ChatResponse>;
 
+    /// Chat completion with streaming (NDJSON).
+    ///
+    /// Sends `stream: true` regardless of the value on `request`. Each line of the
+    /// response body is deserialized as [`ChatResponse`]. The final event typically
+    /// has `done: Some(true)` and timing fields populated.
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - Chat request (model, messages, options). Streaming methods set
+    ///   `stream` to `true` on a clone of this value before sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The HTTP status is not success (including 4xx)
+    /// - A chunk cannot be read or a line is not valid JSON (see [`Error::StreamError`](crate::Error::StreamError))
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use ollama_oxide::{ChatMessage, ChatRequest, OllamaApiAsync, OllamaClient};
+    ///
+    /// # async fn example() -> ollama_oxide::Result<()> {
+    /// let client = OllamaClient::default()?;
+    /// let request = ChatRequest::new("qwen3:0.6b", [ChatMessage::user("Hi!")]);
+    /// let stream = client.chat_stream(&request).await?;
+    /// while let Some(ev) = stream.next().await {
+    ///     let chunk = ev?;
+    ///     if let Some(t) = chunk.content() {
+    ///         print!("{}", t);
+    ///     }
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    async fn chat_stream(&self, request: &ChatRequest) -> Result<ChatStream>;
+
     /// Create a custom model (async, non-streaming)
     ///
     /// Creates a new model from an existing model with custom configuration.
@@ -542,6 +581,14 @@ impl OllamaApiAsync for OllamaClient {
     async fn chat(&self, request: &ChatRequest) -> Result<ChatResponse> {
         let url = self.config.url(Endpoints::CHAT);
         self.post_with_retry(&url, request).await
+    }
+
+    async fn chat_stream(&self, request: &ChatRequest) -> Result<ChatStream> {
+        let mut req = request.clone();
+        req.stream = Some(true);
+        let url = self.config.url(Endpoints::CHAT);
+        let rx = self.post_ndjson_stream(&url, &req).await?;
+        Ok(ChatStream::new(rx))
     }
 
     #[cfg(feature = "model")]

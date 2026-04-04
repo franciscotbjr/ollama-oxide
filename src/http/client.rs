@@ -6,6 +6,21 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use super::ClientConfig;
+use super::streaming::ChatStreamBlocking;
+
+/// Per-request timeout for NDJSON streaming bodies (long-running generations).
+const STREAMING_TIMEOUT: Duration = Duration::from_secs(300);
+
+/// Trims leading and trailing ASCII whitespace from a byte slice.
+fn trim_bytes(mut s: &[u8]) -> &[u8] {
+    while s.first().is_some_and(|b| b.is_ascii_whitespace()) {
+        s = &s[1..];
+    }
+    while s.last().is_some_and(|b| b.is_ascii_whitespace()) {
+        s = &s[..s.len() - 1];
+    }
+    s
+}
 
 /// HTTP client for Ollama API
 ///
@@ -585,5 +600,113 @@ impl OllamaClient {
         }
 
         Err(Error::MaxRetriesExceededError(self.config.max_retries()))
+    }
+
+    /// Execute async HTTP POST and stream newline-delimited JSON (NDJSON) responses.
+    ///
+    /// Does not retry: streaming responses are long-lived and partial data would be lost.
+    /// Uses a 300-second per-request timeout override suitable for long generations.
+    pub(super) async fn post_ndjson_stream<R, T>(
+        &self,
+        url: &str,
+        body: &R,
+    ) -> Result<tokio::sync::mpsc::Receiver<Result<T>>>
+    where
+        R: serde::Serialize + ?Sized,
+        T: serde::de::DeserializeOwned + Send + 'static,
+    {
+        let response = self
+            .client
+            .post(url)
+            .json(body)
+            .timeout(STREAMING_TIMEOUT)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(Error::HttpStatusError(response.status().as_u16()));
+        }
+
+        let (tx, rx) = tokio::sync::mpsc::channel::<Result<T>>(32);
+
+        tokio::spawn(async move {
+            let mut response = response;
+            let mut buf: Vec<u8> = Vec::new();
+
+            loop {
+                match response.chunk().await {
+                    Ok(Some(chunk)) => {
+                        buf.extend_from_slice(&chunk);
+                        while let Some(idx) = buf.iter().position(|&b| b == b'\n') {
+                            let mut line: Vec<u8> = buf.drain(..=idx).collect();
+                            if line.last() == Some(&b'\n') {
+                                line.pop();
+                            }
+                            if line.last() == Some(&b'\r') {
+                                line.pop();
+                            }
+                            if line.is_empty() {
+                                continue;
+                            }
+                            match serde_json::from_slice::<T>(&line) {
+                                Ok(v) => {
+                                    if tx.send(Ok(v)).await.is_err() {
+                                        return;
+                                    }
+                                }
+                                Err(e) => {
+                                    let _ = tx.send(Err(Error::StreamError(e.to_string()))).await;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    Ok(None) => {
+                        let trimmed = trim_bytes(&buf);
+                        if !trimmed.is_empty() {
+                            match serde_json::from_slice::<T>(trimmed) {
+                                Ok(v) => {
+                                    let _ = tx.send(Ok(v)).await;
+                                }
+                                Err(e) => {
+                                    let _ = tx.send(Err(Error::StreamError(e.to_string()))).await;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    Err(e) => {
+                        let _ = tx.send(Err(Error::StreamError(e.to_string()))).await;
+                        break;
+                    }
+                }
+            }
+        });
+
+        Ok(rx)
+    }
+
+    /// Execute blocking HTTP POST and return a line iterator over NDJSON responses.
+    ///
+    /// Does not retry. Uses a 300-second per-request timeout override.
+    pub(super) fn post_ndjson_stream_blocking<R>(
+        &self,
+        url: &str,
+        body: &R,
+    ) -> Result<ChatStreamBlocking>
+    where
+        R: serde::Serialize + ?Sized,
+    {
+        let blocking_client = reqwest::blocking::Client::builder()
+            .timeout(STREAMING_TIMEOUT)
+            .build()?;
+
+        let response = blocking_client.post(url).json(body).send()?;
+
+        if !response.status().is_success() {
+            return Err(Error::HttpStatusError(response.status().as_u16()));
+        }
+
+        Ok(ChatStreamBlocking::new(response))
     }
 }

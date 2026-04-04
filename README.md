@@ -1,11 +1,11 @@
 # ollama-oxide
-
-  [![Crates.io](https://img.shields.io/crates/v/ollama-oxide)](https://crates.io/crates/markdown-harvest)
+<div align="center">
+  <img src="assets/logo.svg" alt="ollama-oxide Logo" width="1200" height="300">
+  
+  [![Crates.io](https://img.shields.io/crates/v/ollama-oxide)](https://crates.io/crates/ollama_oxide)
   [![Documentation](https://docs.rs/ollama_oxide/badge.svg)](https://docs.rs/ollama_oxide)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org/)
-<div align="center">
-  <img src="assets/logo.svg" alt="ollama-oxide Logo" width="1200" height="300">
 </div>
 The Llama in the Crate is a Rust library providing low-level primitives and high-level conveniences for integrating with [Ollama](https://github.com/ollama)'s native API.
 <div align="center">
@@ -21,6 +21,7 @@ The Llama in the Crate is a Rust library providing low-level primitives and high
 - **Comprehensive error handling**
 - **HTTP/2 support** via reqwest
 - **Feature flags** for modular dependencies
+- **Streaming chat** — `POST /api/chat` as NDJSON via `chat_stream` / `chat_stream_blocking` (see examples `chat_stream_async`, `chat_stream_sync`; thinking models: `chat_stream_think_async`, `chat_stream_think_sync`)
 
 ## Architecture
 
@@ -110,6 +111,13 @@ cargo test
 cargo run --example basic_generation
 ```
 
+Streaming chat (requires a running Ollama server):
+
+```bash
+cargo run --example chat_stream_async
+cargo run --example chat_stream_sync
+```
+
 ## API Documentation
 
 The library follows Ollama's OpenAPI specifications (see [spec/primitives/](spec/primitives/)).
@@ -117,7 +125,7 @@ The library follows Ollama's OpenAPI specifications (see [spec/primitives/](spec
 **12 Total Endpoints:**
 - 5 Simple endpoints (version, tags, ps, copy, delete)
 - 2 Medium complexity (show, embed)
-- 5 Complex with streaming (generate, chat, create, pull, push)
+- 5 Complex endpoints where Ollama supports streaming modes (generate, chat, create, pull, push) — **chat** NDJSON streaming is implemented in this crate; other streaming modes may follow in later releases
 
 See [spec/api-analysis.md](spec/api-analysis.md) for detailed endpoint documentation.
 

@@ -10,12 +10,15 @@ readme = "README.md"
 repository = "https://github.com/franciscotbjr/ollama-oxide"
 exclude = [
     ".claude/*",
+    ".cursor/*",
     ".github/*",
+    ".stateful-spec/*",
     "assets/*",
     "examples/*",
     "spec/*",
     "impl/*",
     "tmp/*",
+    "AGENTS.md",
     "ARCHITECTURE.md",
     "BLOCKERS.md",
     "CONTRIBUTING.md",
@@ -47,6 +50,18 @@ futures = { version = "0.3.31", optional = true }
 
 [dev-dependencies]
 mockito = "1.7.1"
+
+[[example]]
+name = "chat_stream_async"
+
+[[example]]
+name = "chat_stream_sync"
+
+[[example]]
+name = "chat_stream_think_async"
+
+[[example]]
+name = "chat_stream_think_sync"
 
 [[example]]
 name = "tools_async"

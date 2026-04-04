@@ -22,11 +22,7 @@ async fn test_version_async_successful() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version().await;
@@ -50,11 +46,7 @@ async fn test_version_async_different_version() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version().await;
@@ -86,11 +78,7 @@ async fn test_version_async_retry_logic_success_on_second_attempt() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(5),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(5), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version().await;
@@ -114,11 +102,7 @@ async fn test_version_async_max_retries_exceeded() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(1),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(1), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version().await;
@@ -139,11 +123,7 @@ async fn test_version_async_json_deserialization_error() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version().await;
@@ -164,11 +144,7 @@ async fn test_version_async_invalid_json() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 3).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version().await;
@@ -190,11 +166,7 @@ async fn test_version_async_concurrent_calls() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        3,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 3).unwrap();
 
     let client = Arc::new(OllamaClient::new(config).unwrap());
     let mut tasks = vec![];
@@ -233,7 +205,8 @@ async fn test_version_async_404_error() {
         server.url(),
         Duration::from_secs(30),
         0, // No retries for this test
-    ).unwrap();
+    )
+    .unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version().await;
@@ -255,11 +228,7 @@ async fn test_version_async_with_zero_retries() {
         .create_async()
         .await;
 
-    let config = ClientConfig::new(
-        server.url(),
-        Duration::from_secs(30),
-        0,
-    ).unwrap();
+    let config = ClientConfig::new(server.url(), Duration::from_secs(30), 0).unwrap();
 
     let client = OllamaClient::new(config).unwrap();
     let result = client.version().await;

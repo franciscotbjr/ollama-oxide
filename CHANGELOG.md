@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+- **POST /api/chat streaming (NDJSON)**: Incremental chat responses over newline-delimited JSON
+  - `OllamaApiAsync::chat_stream()` → `ChatStream` (async `Stream` of `ChatResponse` chunks)
+  - `OllamaApiSync::chat_stream_blocking()` → `ChatStreamBlocking` (blocking iterator of `ChatResponse` chunks)
+  - `ChatRequest::with_stream(true)` (and builder) to request a streamed response from Ollama
+  - `src/http/streaming.rs`: NDJSON framing, line parsing, and stream types
+  - Integration tests in `tests/client_chat_stream_tests.rs` (mockito; no live server)
+  - Examples: `chat_stream_async`, `chat_stream_sync`
+  - **Thinking + streaming examples** (models with `think` support): `chat_stream_think_async`, `chat_stream_think_sync` — these skip empty `thinking` / `content` strings so `[thinking]` / `[response]` labels stay aligned when the server sends placeholder `""` chunks during reasoning
+- **Developer workflow:** Vendored [Stateful Spec](https://github.com/franciscotbjr/stateful-spec) methodology, templates, and prompt sources under `.stateful-spec/` (templates, prompts, refreshed methodology). Cursor operation rules align with upstream `prompts/operations/`. See `.stateful-spec/history/021-stateful-spec-sync.md`.
 - **Feature-based library design**: Modular opt-in architecture via Cargo features
   - `tools` feature: Ergonomic function calling with auto-generated JSON schemas
     - `Tool` trait for type-safe tool definitions
@@ -146,7 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - v0.4.0 will focus on examples and production readiness
 
 ### Planned for v0.2.0
-- Streaming support for generate, chat, create, pull, push endpoints
+- Streaming support for generate, create, pull, push endpoints (chat streaming is available in **[Unreleased]**)
 
 ## [0.1.0] - 2025-01-10
 

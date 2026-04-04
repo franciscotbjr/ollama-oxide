@@ -25,7 +25,8 @@ fn test_client_config_custom_values() {
         "http://example.com:8080".to_string(),
         Duration::from_secs(60),
         5,
-    ).unwrap();
+    )
+    .unwrap();
 
     assert_eq!(config.base_url(), "http://example.com:8080");
     assert_eq!(config.timeout(), Duration::from_secs(60));
@@ -38,7 +39,8 @@ fn test_client_config_clone() {
         "http://localhost:11434".to_string(),
         Duration::from_secs(30),
         3,
-    ).unwrap();
+    )
+    .unwrap();
 
     let cloned = config.clone();
 
@@ -62,7 +64,8 @@ fn test_client_config_with_zero_timeout() {
         "http://localhost:11434".to_string(),
         Duration::from_secs(0),
         3,
-    ).unwrap();
+    )
+    .unwrap();
 
     assert_eq!(config.timeout(), Duration::from_secs(0));
 }
@@ -73,7 +76,8 @@ fn test_client_config_with_zero_retries() {
         "http://localhost:11434".to_string(),
         Duration::from_secs(30),
         0,
-    ).unwrap();
+    )
+    .unwrap();
 
     assert_eq!(config.max_retries(), 0);
 }
@@ -84,7 +88,8 @@ fn test_client_config_with_https_url() {
         "https://secure.example.com".to_string(),
         Duration::from_secs(30),
         3,
-    ).unwrap();
+    )
+    .unwrap();
 
     assert_eq!(config.base_url(), "https://secure.example.com");
 }
@@ -95,7 +100,8 @@ fn test_client_config_with_custom_port() {
         "http://localhost:9999".to_string(),
         Duration::from_secs(30),
         3,
-    ).unwrap();
+    )
+    .unwrap();
 
     assert_eq!(config.base_url(), "http://localhost:9999");
 }
@@ -106,7 +112,8 @@ fn test_client_config_with_long_timeout() {
         "http://localhost:11434".to_string(),
         Duration::from_secs(300),
         3,
-    ).unwrap();
+    )
+    .unwrap();
 
     assert_eq!(config.timeout(), Duration::from_secs(300));
 }
@@ -117,7 +124,8 @@ fn test_client_config_with_many_retries() {
         "http://localhost:11434".to_string(),
         Duration::from_secs(30),
         10,
-    ).unwrap();
+    )
+    .unwrap();
 
     assert_eq!(config.max_retries(), 10);
 }
