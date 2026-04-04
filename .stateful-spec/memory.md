@@ -6,17 +6,18 @@
 - **Description:** Rust client library for Ollama's native HTTP API, providing typed async and sync interfaces
 - **Status:** Active development
 - **Current Version:** 0.1.2
-- **Branch:** release/0_1_3
+- **Branch:** `feature/chat_stream` (verify locally; release branches may differ)
 
 ## Active Work
 
-None — no active iteration.
+None — no active iteration. Last closed: **022** (chat NDJSON streaming + docs + think examples).
 
 ## Recent Completions
 
+- **2026-04-04:** **Chat streaming (NDJSON)** — `chat_stream` / `chat_stream_blocking`, `ChatStream` / `ChatStreamBlocking`, `tests/client_chat_stream_tests.rs`, examples `chat_stream_async`, `chat_stream_sync`, `chat_stream_think_async`, `chat_stream_think_sync` (empty-chunk handling for think labels). Docs: `CHANGELOG`, `README`, `ARCHITECTURE`. See iteration `022-post-chat-stream-ndjson`.
 - **2026-04-03:** Synced Stateful Spec artifacts from upstream `main` (methodology, templates, prompts, Cursor rules refresh). See iteration `021-stateful-spec-sync`.
 
-All Phase 1 work (v0.1.x) is complete: 12 API endpoints implemented in non-streaming mode, HTTP client with retry/backoff, feature flag architecture (`tools`, `model`), ergonomic constructors, and private `ClientConfig` fields. See History Index below for the full list of prior iterations imported from `impl/`.
+All Phase 1 work (v0.1.x) is complete: 12 API endpoints implemented; **chat** additionally supports NDJSON streaming (`chat_stream` / `chat_stream_blocking`). Other endpoints remain non-streaming until a later release. HTTP client with retry/backoff, feature flag architecture (`tools`, `model`), ergonomic constructors, and private `ClientConfig` fields. See History Index below for the full list of prior iterations imported from `impl/`.
 
 ## Key Decisions
 
@@ -29,6 +30,7 @@ All Phase 1 work (v0.1.x) is complete: 12 API endpoints implemented in non-strea
 | Manual From impls (no #[from] for external types) | Pre-Stateful Spec | Avoid exposing external error types through the public API |
 | Adopted Stateful Spec methodology with Cursor agent | 2026-04-03 | AI memory persistence across sessions and agents; operation prompts as `.cursor/rules/*.mdc` |
 | Full Stateful Spec sync from `stateful-spec` `main` | 2026-04-03 | Vendored `templates/`, `prompts/`, refreshed methodology; Cursor rules regenerated from upstream operations |
+| Chat stream chunks may include empty `content` / `thinking` strings | 2026-04-04 | Ollama can emit `""` while reasoning; UI/examples should ignore empty strings when splitting sections — see iteration 022 |
 
 ## Constraints & Reminders
 
@@ -69,3 +71,4 @@ Prior iterations imported from `impl/` (all pre-Stateful Spec):
 | 19 | ollama-client-ergonomic-constructors | feature | done | `OllamaClient::with_base_url()`, `with_base_url_and_timeout()` |
 | 20 | client-config-private-fields | refactor | done | `ClientConfig` fields private with getters, URL validation at construction |
 | 021 | stateful-spec-sync | chore | done | Upstream sync: methodology, templates, prompts, `.cursor/rules/*.mdc`, `AGENTS.md` |
+| 022 | post-chat-stream-ndjson | feature | done | `POST /api/chat` NDJSON streaming, tests, examples (incl. think), doc updates |

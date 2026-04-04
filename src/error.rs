@@ -31,6 +31,10 @@ pub enum Error {
 
     #[error("Maximum retry attempts ({0}) exceeded")]
     MaxRetriesExceededError(u32),
+
+    /// Error while reading or parsing a streaming (NDJSON) response.
+    #[error("Stream error: {0}")]
+    StreamError(String),
 }
 
 impl From<reqwest::Error> for Error {

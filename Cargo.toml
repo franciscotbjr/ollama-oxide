@@ -52,6 +52,18 @@ futures = { version = "0.3.31", optional = true }
 mockito = "1.7.1"
 
 [[example]]
+name = "chat_stream_async"
+
+[[example]]
+name = "chat_stream_sync"
+
+[[example]]
+name = "chat_stream_think_async"
+
+[[example]]
+name = "chat_stream_think_sync"
+
+[[example]]
 name = "tools_async"
 required-features = ["tools"]
 

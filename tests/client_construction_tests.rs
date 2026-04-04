@@ -24,7 +24,8 @@ fn test_client_creation_with_custom_config() {
         "http://localhost:11434".to_string(),
         Duration::from_secs(30),
         3,
-    ).unwrap();
+    )
+    .unwrap();
 
     let client = OllamaClient::new(config);
     assert!(client.is_ok());
@@ -32,31 +33,19 @@ fn test_client_creation_with_custom_config() {
 
 #[test]
 fn test_client_creation_with_invalid_url() {
-    let result = ClientConfig::new(
-        "not-a-valid-url".to_string(),
-        Duration::from_secs(30),
-        3,
-    );
+    let result = ClientConfig::new("not-a-valid-url".to_string(), Duration::from_secs(30), 3);
     assert!(result.is_err());
 }
 
 #[test]
 fn test_client_creation_with_invalid_url_missing_scheme() {
-    let result = ClientConfig::new(
-        "localhost:11434".to_string(),
-        Duration::from_secs(30),
-        3,
-    );
+    let result = ClientConfig::new("localhost:11434".to_string(), Duration::from_secs(30), 3);
     assert!(result.is_err());
 }
 
 #[test]
 fn test_client_creation_with_empty_url() {
-    let result = ClientConfig::new(
-        "".to_string(),
-        Duration::from_secs(30),
-        3,
-    );
+    let result = ClientConfig::new("".to_string(), Duration::from_secs(30), 3);
     assert!(result.is_err());
 }
 
@@ -158,19 +147,14 @@ fn test_client_creation_with_domain_name() {
 
 #[test]
 fn test_client_with_base_url_and_timeout() {
-    let client = OllamaClient::with_base_url_and_timeout(
-        "http://localhost:8080",
-        Duration::from_secs(60),
-    );
+    let client =
+        OllamaClient::with_base_url_and_timeout("http://localhost:8080", Duration::from_secs(60));
     assert!(client.is_ok());
 }
 
 #[test]
 fn test_client_with_base_url_and_timeout_invalid_url() {
-    let result = OllamaClient::with_base_url_and_timeout(
-        "not-a-url",
-        Duration::from_secs(60),
-    );
+    let result = OllamaClient::with_base_url_and_timeout("not-a-url", Duration::from_secs(60));
     assert!(result.is_err());
 }
 
@@ -183,11 +167,7 @@ fn test_client_config_new_validates_url() {
     );
     assert!(valid.is_ok());
 
-    let invalid = ClientConfig::new(
-        "not-a-url".to_string(),
-        Duration::from_secs(30),
-        3,
-    );
+    let invalid = ClientConfig::new("not-a-url".to_string(), Duration::from_secs(30), 3);
     assert!(invalid.is_err());
 }
 
@@ -200,13 +180,16 @@ fn test_client_config_with_base_url_validates_url() {
 
 #[test]
 fn test_client_config_with_base_url_and_timeout_validates_url() {
-    assert!(ClientConfig::with_base_url_and_timeout(
-        "http://valid.url".to_string(),
-        Duration::from_secs(60),
-    ).is_ok());
+    assert!(
+        ClientConfig::with_base_url_and_timeout(
+            "http://valid.url".to_string(),
+            Duration::from_secs(60),
+        )
+        .is_ok()
+    );
 
-    assert!(ClientConfig::with_base_url_and_timeout(
-        "not-a-url".to_string(),
-        Duration::from_secs(60),
-    ).is_err());
+    assert!(
+        ClientConfig::with_base_url_and_timeout("not-a-url".to_string(), Duration::from_secs(60),)
+            .is_err()
+    );
 }

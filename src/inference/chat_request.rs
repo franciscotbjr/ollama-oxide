@@ -102,7 +102,10 @@ pub struct ChatRequest {
 
     /// Whether to stream the response.
     ///
-    /// Always set to `false` for v0.1.0 (non-streaming only).
+    /// `ChatRequest::new` sets this to `false` for non-streaming use.
+    /// [`OllamaApiAsync::chat_stream`](crate::OllamaApiAsync::chat_stream) and
+    /// [`OllamaApiSync::chat_stream_blocking`](crate::OllamaApiSync::chat_stream_blocking)
+    /// clone the request and set `stream` to `true` regardless of this field.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stream: Option<bool>,
 
@@ -214,6 +217,29 @@ impl ChatRequest {
     /// ```
     pub fn with_message(mut self, message: ChatMessage) -> Self {
         self.messages.push(message);
+        self
+    }
+
+    /// Set whether the server should stream the response (NDJSON).
+    ///
+    /// For typical use, prefer [`OllamaApiAsync::chat_stream`](crate::OllamaApiAsync::chat_stream)
+    /// or [`OllamaApiSync::chat_stream_blocking`](crate::OllamaApiSync::chat_stream_blocking),
+    /// which send `stream: true` automatically.
+    ///
+    /// # Arguments
+    ///
+    /// * `stream` - `true` for streaming, `false` for a single JSON response.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use ollama_oxide::{ChatRequest, ChatMessage};
+    ///
+    /// let request = ChatRequest::new("qwen3:0.6b", [ChatMessage::user("Hi!")]).with_stream(true);
+    /// assert_eq!(request.stream, Some(true));
+    /// ```
+    pub fn with_stream(mut self, stream: bool) -> Self {
+        self.stream = Some(stream);
         self
     }
 

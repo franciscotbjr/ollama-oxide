@@ -75,7 +75,9 @@ pub use inference::{
 pub mod http;
 
 #[cfg(feature = "http")]
-pub use http::{ClientConfig, OllamaApiAsync, OllamaApiSync, OllamaClient};
+pub use http::{
+    ChatStream, ChatStreamBlocking, ClientConfig, OllamaApiAsync, OllamaApiSync, OllamaClient,
+};
 
 // ============================================================================
 // Model Module
@@ -110,7 +112,9 @@ pub mod prelude {
     pub use crate::{Error, Result};
 
     #[cfg(feature = "http")]
-    pub use crate::{ClientConfig, OllamaApiAsync, OllamaApiSync, OllamaClient};
+    pub use crate::{
+        ChatStream, ChatStreamBlocking, ClientConfig, OllamaApiAsync, OllamaApiSync, OllamaClient,
+    };
 
     #[cfg(feature = "inference")]
     pub use crate::{
