@@ -58,23 +58,23 @@ Add this to your `Cargo.toml`:
 ```toml
 # Default features (inference + http)
 [dependencies]
-ollama-oxide = "0.1.0"
+ollama-oxide = "0.2.0"
 
 # With function calling support
 [dependencies]
-ollama-oxide = { version = "0.1.0", features = ["tools"] }
+ollama-oxide = { version = "0.2.0", features = ["tools"] }
 
 # With model management
 [dependencies]
-ollama-oxide = { version = "0.1.0", features = ["model"] }
+ollama-oxide = { version = "0.2.0", features = ["model"] }
 
 # Full featured
 [dependencies]
-ollama-oxide = { version = "0.1.0", features = ["tools", "model"] }
+ollama-oxide = { version = "0.2.0", features = ["tools", "model"] }
 
 # Inference types only (no HTTP client)
 [dependencies]
-ollama-oxide = { version = "0.1.0", default-features = false, features = ["inference"] }
+ollama-oxide = { version = "0.2.0", default-features = false, features = ["inference"] }
 ```
 
 ## Quick Start

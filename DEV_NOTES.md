@@ -4,9 +4,9 @@ This document contains internal development notes, architectural decisions, and 
 
 ## Project Status
 
-**Current Version:** 0.1.2
-**Status:** Phase 1 Complete - All 12 endpoints implemented (non-streaming)
-**Last Updated:** 2026-02-15
+**Current Version:** 0.2.0
+**Status:** Phase 1 complete (all 12 endpoints); **v0.2.0** adds **POST /api/chat** NDJSON streaming
+**Last Updated:** 2026-04-04
 
 ## Architecture Overview
 
@@ -332,14 +332,14 @@ The library uses Cargo features to provide a modular, opt-in design where develo
 
 ## API Implementation Strategy
 
-### Versioning Strategy Update (2026-01-17)
-**Decision:** All 12 endpoints implemented in v0.1.0 (non-streaming mode), streaming deferred to v0.2.0
+### Versioning Strategy Update (2026-01-17; revised 2026-04-04)
+**Decision:** All 12 endpoints implemented in the v0.1.x line (non-streaming for generate/create/pull/push). **Chat** NDJSON streaming ships in **v0.2.0**; remaining streaming endpoints follow later.
 
 **Rationale:**
 - Provides complete API coverage sooner
 - Streaming is an enhancement, not a blocker for basic functionality
-- Allows users to use all endpoints immediately with `stream: false`
-- Clear separation between functionality (v0.1.0) and streaming (v0.2.0)
+- Allows users to use all endpoints immediately with `stream: false` where applicable
+- Clear separation between Phase 1 coverage and incremental streaming delivery
 
 ### Phase 1 (v0.1.0): Foundation + All Endpoints ✅ COMPLETE
 All 12 endpoints implemented in non-streaming mode:
@@ -349,14 +349,14 @@ All 12 endpoints implemented in non-streaming mode:
 - 5 Complex endpoints in non-streaming mode (generate, chat, create, pull, push) ✅
 - Full test coverage (330+ tests)
 
-### Phase 2 (v0.2.0): Streaming Implementation
-Add streaming support to applicable endpoints:
-- POST /api/generate - streaming responses
-- POST /api/chat - streaming responses
-- POST /api/create - progress streaming
-- POST /api/pull - progress streaming
-- POST /api/push - progress streaming
-- Stream helper utilities
+### Phase 2 (v0.2.0+): Streaming Implementation
+**Shipped in v0.2.0:** `POST /api/chat` NDJSON (`chat_stream` / `chat_stream_blocking`). **Planned:** generate, create, pull, push streaming.
+- POST /api/generate - streaming responses *(planned)*
+- POST /api/chat - NDJSON streaming *(v0.2.0)*
+- POST /api/create - progress streaming *(planned)*
+- POST /api/pull - progress streaming *(planned)*
+- POST /api/push - progress streaming *(planned)*
+- Stream helper utilities *(extended as endpoints are added)*
 
 ### Phase 3 (v0.3.0): Conveniences Module
 Build high-level APIs in `conveniences` module:
