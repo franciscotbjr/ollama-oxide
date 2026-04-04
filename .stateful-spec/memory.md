@@ -6,14 +6,15 @@
 - **Description:** Rust client library for Ollama's native HTTP API, providing typed async and sync interfaces
 - **Status:** Active development
 - **Current Version:** 0.2.0
-- **Branch:** `feature/chat_stream` (verify locally; release branches may differ)
+- **Branch:** `release/0_2_1` (verify locally)
 
 ## Active Work
 
-None — no active iteration. Last closed: **022** (chat NDJSON streaming + docs + think examples).
+None — no active iteration. Last shipped: **v0.2.0** (iteration **022** — chat NDJSON streaming + docs).
 
 ## Recent Completions
 
+- **2026-04-04:** **v0.2.0 release** — Version bump and docs aligned (`Cargo.toml`, `README`, `spec/definition`, `DEV_NOTES`, Stateful Spec); `CHANGELOG` dated **2026-04-04**, no empty `Unreleased` section. Commit `ef770cf` on `release/0_2_1`.
 - **2026-04-04:** **Chat streaming (NDJSON)** — `chat_stream` / `chat_stream_blocking`, `ChatStream` / `ChatStreamBlocking`, `tests/client_chat_stream_tests.rs`, examples `chat_stream_async`, `chat_stream_sync`, `chat_stream_think_async`, `chat_stream_think_sync` (empty-chunk handling for think labels). Docs: `CHANGELOG`, `README`, `ARCHITECTURE`. See iteration `022-post-chat-stream-ndjson`.
 - **2026-04-03:** Synced Stateful Spec artifacts from upstream `main` (methodology, templates, prompts, Cursor rules refresh). See iteration `021-stateful-spec-sync`.
 
