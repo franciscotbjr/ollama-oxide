@@ -11,8 +11,8 @@
 - **Project Type:** library
 - **Repository URL:** https://github.com/franciscotbjr/ollama-oxide
 - **License:** MIT
-- **Current Version:** 0.1.2
-- **Status:** Active development — Phase 1 complete (all 12 endpoints, non-streaming)
+- **Current Version:** 0.2.0
+- **Status:** Active development — Phase 1 complete (all 12 endpoints); **v0.2.0** adds **POST /api/chat** NDJSON streaming (`chat_stream` / `chat_stream_blocking`)
 - **Author:** Francisco (@franciscotbjr)
 
 ## Technology Stack

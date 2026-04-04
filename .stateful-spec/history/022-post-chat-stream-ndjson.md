@@ -4,7 +4,7 @@
 |-------|-------|
 | **Type** | feature |
 | **Status** | done |
-| **Branch / context** | `feature/chat_stream` (merge target: release line as per project workflow) |
+| **Branch / context** | Landed on `release/0_2_1`; released as **v0.2.0** (2026-04-04) |
 | **Date** | 2026-04-04 |
 
 ## Description
@@ -13,7 +13,7 @@ Streaming chat over `POST /api/chat` using newline-delimited JSON: `OllamaApiAsy
 
 Think-stream examples skip **empty** `thinking()` / `content()` strings so `[thinking]` / `[response]` labels are not flipped when Ollama sends placeholder `""` during reasoning.
 
-Documentation updated: `CHANGELOG.md` ([Unreleased]), `README.md` (features + run commands), `ARCHITECTURE.md` (HTTP streaming note, trait diagram).
+Documentation updated: `CHANGELOG.md` (v0.2.0), `README.md` (features + run commands), `ARCHITECTURE.md` (HTTP streaming note, trait diagram).
 
 ## Acceptance criteria
 
@@ -41,8 +41,9 @@ Documentation updated: `CHANGELOG.md` ([Unreleased]), `README.md` (features + ru
 
 - `src/http/streaming.rs`, `src/http/client.rs`, `src/http/api_async.rs`, `src/http/api_sync.rs`
 - `examples/chat_stream_*.rs`, `examples/chat_stream_think_*.rs`
+- Release commit: `ef770cf` — `chore: release v0.2.0 and align documentation` (`release/0_2_1`)
 
 ## Follow-up
 
-- [ ] Merge / release notes when versioning `[Unreleased]` changelog section
-- [ ] Optional: streaming for generate, pull, push, create (see CHANGELOG Planned v0.2.0)
+- [x] Release notes: `CHANGELOG.md` **v0.2.0** (2026-04-04)
+- [ ] Optional: streaming for generate, pull, push, create (see `CHANGELOG` *Planned for a future release*)

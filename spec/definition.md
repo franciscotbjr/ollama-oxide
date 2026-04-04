@@ -2,7 +2,7 @@
 
 **Document Version:** 1.8
 **Last Updated:** 2026-02-15
-**Project Version:** 0.1.2
+**Project Version:** 0.2.0
 
 ## Executive Summary
 
@@ -15,7 +15,7 @@
 - **Project Name:** ollama-oxide
 - **Repository:** https://github.com/franciscotbjr/ollama-oxide
 - **License:** MIT
-- **Current Version:** 0.1.0
+- **Current Version:** 0.2.0
 - **Status:** Early Development / Foundation Phase
 - **Primary Language:** Rust (Edition 2024)
 - **Author:** Francisco
@@ -162,19 +162,19 @@ model = ["http", "inference"]         # Model management (opt-in)
 **Usage Examples:**
 ```toml
 # Default features (inference + http)
-ollama-oxide = "0.1.0"
+ollama-oxide = "0.2.0"
 
 # With function calling support
-ollama-oxide = { version = "0.1.0", features = ["tools"] }
+ollama-oxide = { version = "0.2.0", features = ["tools"] }
 
 # With model management
-ollama-oxide = { version = "0.1.0", features = ["model"] }
+ollama-oxide = { version = "0.2.0", features = ["model"] }
 
 # Full featured
-ollama-oxide = { version = "0.1.0", features = ["tools", "model"] }
+ollama-oxide = { version = "0.2.0", features = ["tools", "model"] }
 
 # Inference types only (no HTTP client)
-ollama-oxide = { version = "0.1.0", default-features = false, features = ["inference"] }
+ollama-oxide = { version = "0.2.0", default-features = false, features = ["inference"] }
 ```
 
 ## Technical Stack
@@ -263,7 +263,7 @@ The library's implementation is driven by Ollama's official OpenAPI specificatio
 
 **Complex POST Endpoints (5) - Non-Streaming Mode:**
 8. `POST /api/generate` - Generate text completions (non-streaming only)
-9. `POST /api/chat` - Chat completions (non-streaming only)
+9. `POST /api/chat` - Chat completions (non-streaming default; **NDJSON streaming** via `chat_stream` / `chat_stream_blocking` in **v0.2.0**)
 10. `POST /api/create` - Create custom models (non-streaming only)
 11. `POST /api/pull` - Download models (non-streaming only)
 12. `POST /api/push` - Upload models (non-streaming only)
@@ -275,24 +275,26 @@ The library's implementation is driven by Ollama's official OpenAPI specificatio
 - Basic integration test framework
 - Module structure with feature flags working
 
-#### Phase 2 (v0.2.0): Streaming Implementation
+#### Phase 2 (v0.2.0+): Streaming Implementation
 **Focus:** Add streaming support to endpoints that support it
 
+**Status (crate 0.2.0):** `POST /api/chat` NDJSON streaming is implemented (`ChatStream`, `ChatStreamBlocking`). Remaining endpoints below are **not** yet exposed as streams in the client.
+
 **Streaming Endpoints (5):**
-1. `POST /api/generate` - Generate text completions with streaming
-2. `POST /api/chat` - Chat completions with streaming
-3. `POST /api/create` - Create custom models with progress streaming
-4. `POST /api/pull` - Download models with progress streaming
-5. `POST /api/push` - Upload models with progress streaming
+1. `POST /api/generate` - Generate text completions with streaming *(planned)*
+2. `POST /api/chat` - Chat completions with streaming *(**shipped** in v0.2.0)*
+3. `POST /api/create` - Create custom models with progress streaming *(planned)*
+4. `POST /api/pull` - Download models with progress streaming *(planned)*
+5. `POST /api/push` - Upload models with progress streaming *(planned)*
 
 **Scope:**
-- Streaming infrastructure and abstractions
+- Streaming infrastructure and abstractions *(chat: done; others: planned)*
 - Stream helper utilities and iterators
 - Progress callback system for model operations
 - Async stream implementations
 
 **Deliverables:**
-- Streaming support for all 5 streaming-capable endpoints
+- Streaming support for all 5 streaming-capable endpoints *(partial: chat done)*
 - Stream abstraction utilities
 - Progress tracking for long-running operations
 - Comprehensive streaming tests
@@ -681,8 +683,8 @@ The library's implementation is driven by Ollama's official OpenAPI specificatio
 
 ## Success Criteria
 
-### Version 0.1.0: Foundation + All Endpoints (Non-Streaming Mode) (Current)
-**Status:** In Progress
+### Version 0.1.0: Foundation + All Endpoints (Non-Streaming Mode)
+**Status:** Complete (superseded by ongoing releases; see 0.2.0 for chat streaming)
 
 **Completed:**
 - [x] Project structure established
@@ -712,7 +714,7 @@ The library's implementation is driven by Ollama's official OpenAPI specificatio
 
 **Complex POST Endpoints (5) - Non-Streaming Mode:**
 - [x] `POST /api/generate` - Text generation (non-streaming only)
-- [x] `POST /api/chat` - Chat completions (non-streaming only)
+- [x] `POST /api/chat` - Chat completions (non-streaming `chat()` API; streaming via `chat_stream` in v0.2.0)
 - [x] `POST /api/create` - Model creation (non-streaming only)
 - [x] `POST /api/pull` - Model download (non-streaming only)
 - [x] `POST /api/push` - Model upload (non-streaming only)
@@ -734,23 +736,23 @@ The library's implementation is driven by Ollama's official OpenAPI specificatio
 
 ---
 
-### Version 0.2.0: Streaming Implementation (Planned)
-**Status:** Not Started
+### Version 0.2.0: Streaming Implementation (partial — current crate)
+**Status:** **Chat** NDJSON streaming shipped (`chat_stream` / `chat_stream_blocking`). Generate, create, pull, and push streaming remain planned.
 
 **Checklist:**
 - [ ] `POST /api/generate` - Streaming support
-- [ ] `POST /api/chat` - Streaming support
+- [x] `POST /api/chat` - NDJSON streaming support
 - [ ] `POST /api/create` - Progress streaming support
 - [ ] `POST /api/pull` - Progress streaming support
 - [ ] `POST /api/push` - Progress streaming support
-- [ ] Streaming infrastructure and abstractions
-- [ ] Stream helper utilities and async iterators
-- [ ] Progress callback system
-- [ ] Comprehensive streaming tests
-- [ ] Streaming documentation
+- [x] Chat streaming infrastructure (`src/http/streaming.rs`, client helpers)
+- [ ] Stream helper utilities for remaining endpoints
+- [ ] Progress callback system for pull/push/create
+- [x] Comprehensive streaming tests (chat; mockito)
+- [x] Streaming documentation and examples (chat)
 
 **Definition of Done:**
-- All 5 streaming endpoints support streaming mode
+- All 5 streaming endpoints support streaming mode in the client *(partial: chat done in v0.2.0)*
 - Stream utilities work with async iterators
 - Progress tracking functional for long operations
 - Documentation includes streaming examples

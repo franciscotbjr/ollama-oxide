@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2026-04-04
 
 ### Added
 
@@ -150,13 +150,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CONTRIBUTING.md: Feature development guidelines
   - DEV_NOTES.md: Feature-based design decisions
   - spec/definition.md: Updated module descriptions
-- **Versioning strategy update**: All 12 endpoints will be implemented in v0.1.0 (non-streaming mode)
-  - Streaming features moved to v0.2.0
+- **Versioning strategy update**: All 12 endpoints landed in the v0.1.x line (non-streaming for generate/create/pull/push). **Chat** NDJSON streaming ships in **v0.2.0**.
+  - Remaining streaming endpoints (generate, create, pull, push) are planned for a later release
   - v0.3.0 will focus on conveniences module
   - v0.4.0 will focus on examples and production readiness
 
-### Planned for v0.2.0
-- Streaming support for generate, create, pull, push endpoints (chat streaming is available in **[Unreleased]**)
+### Planned for a future release
+- Streaming support for generate, create, pull, push endpoints (**chat** streaming is in **v0.2.0**)
 
 ## [0.1.0] - 2025-01-10
 
@@ -171,5 +171,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This is the initial release establishing the project foundation
 - API is not yet stable and may change significantly
 
-[Unreleased]: https://github.com/franciscotbjr/ollama-oxide/compare/v0.1.0...HEAD
+[0.2.0]: https://github.com/franciscotbjr/ollama-oxide/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/franciscotbjr/ollama-oxide/releases/tag/v0.1.0
