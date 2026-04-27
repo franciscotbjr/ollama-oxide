@@ -30,3 +30,4 @@ target
 impl.md
 
 .github/copilot-instructions.md
+.claude/settings.local.json
